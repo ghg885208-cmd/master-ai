@@ -1,3 +1,7 @@
+/* =========================
+   MASTER — STYLE
+========================= */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -8,10 +12,12 @@
   --bg: #0d0d0f;
   --panel: #141416;
   --panel-2: #202024;
-  --panel-3: #28282d;
-  --border: #303035;
+  --panel-3: #18181b;
+  --border: #29292d;
+  --border-light: #3a3a42;
   --text: #f5f5f5;
   --muted: #9b9ba3;
+  --danger: #ff6b6b;
 }
 
 html,
@@ -27,7 +33,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -35,8 +42,14 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
-/* APP */
+/* =========================
+   APP
+========================= */
 
 .app {
   display: flex;
@@ -44,8 +57,9 @@ button {
   min-height: 100dvh;
 }
 
-
-/* SIDEBAR */
+/* =========================
+   SIDEBAR
+========================= */
 
 .sidebar {
   width: 260px;
@@ -55,7 +69,7 @@ button {
   padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   overflow-y: auto;
 }
 
@@ -63,31 +77,39 @@ button {
   font-size: 22px;
   font-weight: bold;
   letter-spacing: 2px;
+  padding: 4px 2px;
 }
 
-.new-chat,
-.create-project {
+.new-chat {
   width: 100%;
   padding: 13px;
-  border: 1px solid #3a3a40;
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   background: var(--panel-2);
   color: white;
   font-size: 15px;
-  text-align: left;
+  transition: transform 0.15s ease, background 0.15s ease;
 }
 
-.new-chat:active,
-.create-project:active {
+.new-chat:hover {
+  background: #29292f;
+}
+
+.new-chat:active {
   transform: scale(0.98);
 }
 
+.history,
+.projects {
+  min-width: 0;
+}
+
 .section-title {
-  color: var(--muted);
+  color: #8d8d96;
   font-size: 12px;
-  margin: 14px 0 10px;
+  margin: 8px 0 10px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.7px;
 }
 
 .history-list,
@@ -97,36 +119,58 @@ button {
   gap: 4px;
 }
 
-
-/* HISTORY + PROJECT ITEMS */
-
 .history-item,
 .project-item {
   width: 100%;
   border: none;
   background: transparent;
+  padding: 10px;
   color: #c8c8cc;
-  padding: 11px 10px;
   border-radius: 8px;
-  text-align: left;
   font-size: 14px;
+  text-align: left;
   word-break: break-word;
+  transition: background 0.15s ease;
 }
 
 .history-item:hover,
-.project-item:hover,
-.history-item.active,
-.project-item.active {
+.project-item:hover {
   background: var(--panel-2);
+}
+
+.history-item.active {
+  background: #2a2a30;
   color: white;
 }
 
 .create-project {
-  margin-top: 12px;
+  border: 1px dashed var(--border-light);
+  margin-bottom: 7px;
 }
 
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 12px;
+}
 
-/* MAIN */
+.settings-button {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 10px;
+  padding: 11px;
+  text-align: left;
+}
+
+.settings-button:hover {
+  background: var(--panel-2);
+  color: white;
+}
+
+/* =========================
+   MAIN
+========================= */
 
 .main {
   flex: 1;
@@ -136,8 +180,9 @@ button {
   flex-direction: column;
 }
 
-
-/* TOPBAR */
+/* =========================
+   TOPBAR
+========================= */
 
 .topbar {
   height: 65px;
@@ -147,11 +192,12 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 0 25px;
+  gap: 15px;
 }
 
 .menu-button {
   display: none;
-  border: none;
+  border: 0;
   background: transparent;
   color: white;
   font-size: 24px;
@@ -160,13 +206,21 @@ button {
   border-radius: 10px;
 }
 
+.topbar strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .status {
   color: var(--muted);
   font-size: 14px;
+  white-space: nowrap;
 }
 
-
-/* CONTENT */
+/* =========================
+   CONTENT
+========================= */
 
 .content {
   flex: 1;
@@ -175,8 +229,9 @@ button {
   overflow: hidden;
 }
 
-
-/* CHAT */
+/* =========================
+   CHAT
+========================= */
 
 .chat {
   flex: 1;
@@ -201,61 +256,80 @@ button {
   line-height: 1.6;
 }
 
-
-/* MESSAGES */
+/* =========================
+   MESSAGES
+========================= */
 
 .message {
   max-width: 760px;
   margin: 15px auto;
   padding: 14px 16px;
-  border-radius: 12px;
-  line-height: 1.5;
+  border-radius: 14px;
+  line-height: 1.55;
   word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .message.user {
-  background: #29292e;
-  text-align: right;
+  background: #27272b;
+  margin-right: 0;
 }
 
 .message.master {
   background: #18181b;
-  border: 1px solid #242429;
+  border: 1px solid #222227;
 }
 
-.message .file-note {
+.message.master strong {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.file-note {
   display: block;
-  margin-top: 7px;
+  margin-top: 8px;
   color: #aaaab2;
   font-size: 13px;
 }
 
+.loading-message {
+  color: var(--muted);
+  font-style: italic;
+}
 
-/* CANVAS */
+/* =========================
+   CANVAS
+========================= */
 
 .canvas {
   width: 42%;
-  min-width: 300px;
+  min-width: 320px;
   border-left: 1px solid var(--border);
   background: #111113;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .canvas-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 18px;
   color: var(--muted);
   font-size: 14px;
 }
 
 .canvas-title {
-  color: white;
   font-weight: bold;
+  color: white;
 }
 
 .preview {
-  height: 85%;
+  flex: 1;
+  min-height: 0;
   border: 1px dashed #3a3a40;
   border-radius: 12px;
   display: flex;
@@ -264,10 +338,12 @@ button {
   color: #777780;
   text-align: center;
   padding: 20px;
+  overflow: auto;
 }
 
-
-/* INPUT */
+/* =========================
+   INPUT
+========================= */
 
 .input-area {
   flex: 0 0 auto;
@@ -280,7 +356,7 @@ button {
   max-width: 900px;
   margin: 0 auto;
   background: var(--panel-2);
-  border: 1px solid #38383e;
+  border: 1px solid #34343a;
   border-radius: 16px;
   padding: 8px;
   display: flex;
@@ -302,12 +378,13 @@ button {
   height: 42px;
   border-radius: 10px;
   background: transparent;
-  color: white;
-  font-size: 20px;
+  color: #d8d8dc;
+  font-size: 21px;
 }
 
-.attach:hover {
-  background: var(--panel-3);
+.attach:hover,
+.attach:active {
+  background: #303036;
 }
 
 .input-wrap {
@@ -344,9 +421,6 @@ button {
   display: block;
 }
 
-
-/* SEND */
-
 .send {
   width: 44px;
   height: 44px;
@@ -355,27 +429,26 @@ button {
   color: black;
   font-size: 23px;
   line-height: 1;
+  transition: transform 0.15s ease;
 }
 
 .send:active {
   transform: scale(0.96);
 }
 
-
-/* PROJECT MODAL */
+/* =========================
+   MODALS
+========================= */
 
 .modal {
   position: fixed;
   inset: 0;
-  z-index: 100;
-
+  z-index: 50;
   display: none;
   align-items: center;
   justify-content: center;
-
   padding: 20px;
-
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.62);
 }
 
 .modal.show {
@@ -383,62 +456,138 @@ button {
 }
 
 .modal-box {
-  width: min(100%, 420px);
-  background: #18181b;
-  border: 1px solid #34343a;
+  width: min(100%, 460px);
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: #171719;
+  border: 1px solid var(--border-light);
   border-radius: 16px;
-  padding: 24px;
+  padding: 22px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
 }
 
 .modal-box h2 {
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+  font-size: 21px;
 }
 
-.modal-box p {
-  color: var(--muted);
-  margin-bottom: 20px;
+.modal-box h3 {
+  margin: 16px 0 8px;
+  font-size: 16px;
 }
 
-.modal-box input {
+.modal-box > input,
+.settings-box input,
+.settings-box select {
   width: 100%;
-  padding: 13px;
-  border-radius: 10px;
-  border: 1px solid #38383e;
-  background: #242428;
+  border: 1px solid #3a3a40;
+  background: #101012;
   color: white;
+  border-radius: 10px;
+  padding: 12px;
   outline: none;
 }
 
-.modal-box input:focus {
-  border-color: #777780;
+.modal-box > input:focus,
+.settings-box input:focus,
+.settings-box select:focus {
+  border-color: #6a6a75;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 .modal-actions button {
-  padding: 10px 16px;
+  border: 1px solid var(--border-light);
+  background: var(--panel-2);
+  color: white;
+  padding: 10px 15px;
   border-radius: 9px;
 }
 
-.modal-cancel {
-  border: 1px solid #3a3a40;
-  background: transparent;
-  color: white;
-}
-
-.modal-create {
-  border: none;
+.modal-actions button:last-child {
   background: white;
   color: black;
 }
 
+/* =========================
+   SETTINGS
+========================= */
 
-/* MOBILE */
+.settings-box {
+  width: min(100%, 520px);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.settings-header h2 {
+  margin: 0;
+}
+
+#closeSettingsButton {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: white;
+  font-size: 25px;
+}
+
+#closeSettingsButton:hover {
+  background: var(--panel-2);
+}
+
+.settings-note {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 14px 0;
+}
+
+.settings-box label {
+  display: block;
+  color: #d7d7dc;
+  font-size: 13px;
+  margin: 15px 0 7px;
+}
+
+.save-provider {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  background: white;
+  color: black;
+  padding: 12px;
+  margin-top: 18px;
+  font-weight: bold;
+}
+
+.settings-status {
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.settings-box hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 800px) {
 
@@ -448,17 +597,13 @@ button {
 
   .sidebar {
     position: fixed;
-    z-index: 50;
-
+    z-index: 20;
     top: 0;
     bottom: 0;
     left: 0;
-
     width: min(82vw, 300px);
-
     transform: translateX(-105%);
     transition: transform 0.2s ease;
-
     box-shadow: 8px 0 30px rgba(0, 0, 0, 0.35);
   }
 
@@ -476,7 +621,7 @@ button {
   }
 
   .status {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .canvas {
@@ -495,11 +640,13 @@ button {
     font-size: 30px;
   }
 
+  .message {
+    margin: 12px auto;
+    font-size: 15px;
+  }
+
   .input-area {
-    padding:
-      12px
-      12px
-      calc(26px + env(safe-area-inset-bottom));
+    padding: 12px 12px calc(22px + env(safe-area-inset-bottom));
   }
 
   .input-box {
@@ -511,6 +658,17 @@ button {
     width: 46px;
     height: 46px;
     font-size: 24px;
+  }
+
+  .modal {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .modal-box {
+    width: 100%;
+    max-height: 88dvh;
+    border-radius: 18px;
   }
 
 }
