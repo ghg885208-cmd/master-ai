@@ -5,7 +5,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   >
 
   <title>MASTER — Personal AI</title>
@@ -17,7 +17,8 @@
 
   <div class="app">
 
-    <aside class="sidebar">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
 
       <div class="logo">
         MASTER
@@ -58,9 +59,18 @@
     </aside>
 
 
+    <!-- Main area -->
     <main class="main">
 
       <header class="topbar">
+
+        <button
+          class="menu-button"
+          id="menuButton"
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
 
         <strong>
           MASTER
@@ -75,6 +85,7 @@
 
       <div class="content">
 
+        <!-- Chat -->
         <section class="chat">
 
           <div class="welcome">
@@ -93,6 +104,7 @@
         </section>
 
 
+        <!-- Canvas -->
         <aside class="canvas">
 
           <div class="canvas-header">
@@ -116,20 +128,47 @@
       </div>
 
 
+      <!-- Input -->
       <div class="input-area">
 
         <div class="input-box">
 
-          <span>
-            📎
-          </span>
-
           <input
-            type="text"
-            placeholder="Ask MASTER anything..."
+            id="fileInput"
+            type="file"
+            hidden
           >
 
-          <button class="send">
+          <button
+            class="attach"
+            type="button"
+            aria-label="Attach file"
+          >
+            📎
+          </button>
+
+
+          <div class="input-wrap">
+
+            <input
+              type="text"
+              placeholder="Ask MASTER anything..."
+              autocomplete="off"
+            >
+
+            <div
+              class="attachment-name"
+              aria-live="polite"
+            ></div>
+
+          </div>
+
+
+          <button
+            class="send"
+            type="button"
+            aria-label="Send message"
+          >
             ↑
           </button>
 
