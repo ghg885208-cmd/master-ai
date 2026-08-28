@@ -1,44 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  >
-
-  <meta
-    name="theme-color"
-    content="#0b0d12"
+    content="width=device-width, initial-scale=1.0"
   >
 
   <title>MASTER AI</title>
 
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="app">
+  <div class="app">
 
-  <!-- =====================================
-       SIDEBAR
-  ====================================== -->
+    <!-- ==============================
+         SIDEBAR
+    =============================== -->
 
-  <aside
-    class="sidebar"
-    id="sidebar"
-  >
-
-    <div class="sidebar-top">
+    <aside
+      class="sidebar"
+      id="sidebar"
+    >
 
       <div class="logo">
-        <span class="logo-mark">M</span>
-        <span>MASTER AI</span>
+        MASTER AI
       </div>
 
       <button
@@ -46,799 +35,460 @@
         id="newChatButton"
         type="button"
       >
-        <span>＋</span>
-        New Chat
+        ＋ New Chat
       </button>
 
-    </div>
 
+      <div class="history">
 
-    <!-- HISTORY -->
+        <div class="section-title">
+          Chat History
+        </div>
 
-    <section class="history">
-
-      <div class="section-title">
-        Conversations
-      </div>
-
-      <div
-        class="history-list"
-        id="historyList"
-      >
-
-        <!-- JavaScript history -->
+        <div
+          class="history-list"
+          id="historyList"
+        ></div>
 
       </div>
 
-    </section>
 
+      <div class="projects">
 
-    <!-- PROJECTS -->
+        <div class="section-title">
+          Projects
+        </div>
 
-    <section class="projects">
+        <div
+          class="project-list"
+          id="projectList"
+        ></div>
 
-      <div class="section-title">
-        Projects
+        <button
+          class="project-item create-project"
+          id="createProjectButton"
+          type="button"
+        >
+          ＋ Create Project
+        </button>
+
       </div>
 
-      <div
-        class="project-list"
-        id="projectList"
-      >
 
-        <!-- JavaScript projects -->
+      <div class="sidebar-bottom">
+
+        <button
+          class="settings-button"
+          id="settingsButton"
+          type="button"
+        >
+          ⚙ Settings
+        </button>
 
       </div>
 
-      <button
-        class="project-item create-project"
-        id="createProjectButton"
-        type="button"
-      >
-        ＋ New Project
-      </button>
-
-    </section>
+    </aside>
 
 
-    <!-- SIDEBAR BOTTOM -->
+    <!-- ==============================
+         MAIN
+    =============================== -->
 
-    <div class="sidebar-bottom">
-
-      <button
-        class="sidebar-action"
-        id="liveButton"
-        type="button"
-      >
-        <span class="action-icon">◉</span>
-        MASTER LIVE
-      </button>
+    <main class="main">
 
 
-      <button
-        class="settings-button"
-        id="settingsButton"
-        type="button"
-      >
-        <span>⚙</span>
-        Settings & APIs
-      </button>
+      <!-- TOPBAR -->
 
-    </div>
+      <header class="topbar">
 
-  </aside>
-
-
-  <!-- =====================================
-       MOBILE OVERLAY
-  ====================================== -->
-
-  <div
-    class="sidebar-overlay"
-    id="sidebarOverlay"
-    aria-hidden="true"
-  ></div>
-
-
-  <!-- =====================================
-       MAIN
-  ====================================== -->
-
-  <main class="main">
-
-
-    <!-- TOPBAR -->
-
-    <header class="topbar">
-
-      <button
-        class="menu-button"
-        id="menuButton"
-        type="button"
-        aria-label="Open menu"
-      >
-        ☰
-      </button>
-
-
-      <div class="topbar-title">
+        <button
+          class="menu-button"
+          id="menuButton"
+          type="button"
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
 
         <strong>
           MASTER AI
         </strong>
 
         <span
-          class="master-status"
-          id="masterStatus"
+          class="status"
+          id="connectionStatus"
         >
-          All intelligence systems active
+          Ready
         </span>
+
+      </header>
+
+
+      <!-- CONTENT -->
+
+      <div class="content">
+
+
+        <!-- CHAT -->
+
+        <section
+          class="chat"
+          id="chat"
+        >
+
+          <div
+            class="welcome"
+            id="welcomeScreen"
+          >
+
+            <h1>
+              MASTER AI
+            </h1>
+
+            <p>
+              Type a message or talk using Voice AI.
+            </p>
+
+          </div>
+
+        </section>
+
+
+        <!-- PREVIEW -->
+
+        <aside class="canvas">
+
+          <div class="canvas-header">
+
+            <span class="canvas-title">
+              Preview
+            </span>
+
+          </div>
+
+          <div
+            class="preview"
+            id="preview"
+          >
+            Preview output will appear here.
+          </div>
+
+        </aside>
 
       </div>
 
 
-      <!-- MASTER MIND ALWAYS ACTIVE -->
-
-      <div
-        class="mastermind-indicator"
-        id="mastermindIndicator"
-        title="Mastermind analysis is always active"
-      >
-        <span class="brain-icon">
-          🧠
-        </span>
-
-        <span class="indicator-text">
-          MASTER MIND
-        </span>
-
-        <span class="active-dot"></span>
-
-      </div>
-
-
-      <div
-        class="status"
-        id="status"
-      >
-        Ready
-      </div>
-
-    </header>
-
-
-    <!-- CONTENT -->
-
-    <div class="content">
-
-
-      <!-- CHAT -->
+      <!-- ==============================
+           VOICE AI
+      =============================== -->
 
       <section
-        class="chat"
-        id="chat"
+        class="voice-panel"
+        id="voicePanel"
       >
 
-
-        <!-- WELCOME -->
-
         <div
-          class="welcome"
-          id="welcome"
+          class="voice-circle"
+          id="voiceCircle"
+          role="button"
+          tabindex="0"
+          aria-label="Talk to MASTER AI"
         >
 
-          <div class="master-orb small-orb">
+          <div class="voice-core"></div>
 
-            <div class="orb-ring ring-one"></div>
+        </div>
 
-            <div class="orb-ring ring-two"></div>
+        <div
+          class="voice-status"
+          id="voiceStatus"
+        >
+          Tap the circle to speak
+        </div>
 
-            <div class="orb-core">
-              M
-            </div>
+        <button
+          class="voice-button"
+          id="voiceButton"
+          type="button"
+        >
+          🎙 Talk to MASTER
+        </button>
+
+      </section>
+
+
+      <!-- ==============================
+           INPUT
+      =============================== -->
+
+      <section class="input-area">
+
+        <div
+          class="attachment-name"
+          id="attachmentName"
+        ></div>
+
+
+        <div class="input-box">
+
+          <button
+            class="attach"
+            id="attachButton"
+            type="button"
+            aria-label="Attach files"
+          >
+            📎
+          </button>
+
+
+          <input
+            type="file"
+            id="fileInput"
+            multiple
+            hidden
+          >
+
+
+          <div class="input-wrap">
+
+            <input
+              id="messageInput"
+              type="text"
+              placeholder="Message MASTER AI..."
+              autocomplete="off"
+            >
 
           </div>
 
 
-          <h1>
-            MASTER AI
-          </h1>
-
-
-          <p>
-            Ask anything. Mastermind, analysis, planning,
-            creativity and problem solving work together.
-          </p>
-
-
-          <div class="capability-grid">
-
-            <button
-              class="capability-card"
-              data-prompt="Help me analyze this problem deeply."
-              type="button"
-            >
-              <span>🧠</span>
-              Deep Analysis
-            </button>
-
-
-            <button
-              class="capability-card"
-              data-prompt="Compare all possible options and consequences."
-              type="button"
-            >
-              <span>⚖️</span>
-              Compare Options
-            </button>
-
-
-            <button
-              class="capability-card"
-              data-prompt="Create a detailed plan for my goal."
-              type="button"
-            >
-              <span>📋</span>
-              Planning
-            </button>
-
-
-            <button
-              class="capability-card"
-              data-prompt="Help me solve this problem step by step."
-              type="button"
-            >
-              <span>🧩</span>
-              Problem Solving
-            </button>
-
-          </div>
+          <button
+            class="send"
+            id="sendButton"
+            type="button"
+            aria-label="Send message"
+          >
+            ↑
+          </button>
 
         </div>
 
       </section>
 
 
-      <!-- =====================================
-           PREVIEW PANEL
-      ====================================== -->
+    </main>
 
-      <aside
-        class="canvas"
-        id="canvas"
+  </div>
+
+
+  <!-- ==============================
+       SETTINGS MODAL
+  =============================== -->
+
+  <div
+    class="modal"
+    id="settingsModal"
+    aria-hidden="true"
+  >
+
+    <div
+      class="modal-box settings-box"
+      role="dialog"
+      aria-modal="true"
+    >
+
+      <div class="settings-header">
+
+        <h2>
+          Settings
+        </h2>
+
+        <button
+          id="closeSettingsButton"
+          type="button"
+          aria-label="Close settings"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <p class="settings-note">
+
+        API settings and MASTER AI
+        configuration.
+
+      </p>
+
+
+      <label for="providerSelect">
+        API Provider
+      </label>
+
+      <select id="providerSelect">
+
+        <option value="deepseek">
+          DeepSeek
+        </option>
+
+        <option value="openai">
+          OpenAI
+        </option>
+
+        <option value="gemini">
+          Gemini
+        </option>
+
+        <option value="custom">
+          Custom API
+        </option>
+
+      </select>
+
+
+      <label for="apiUrlInput">
+        API URL
+      </label>
+
+      <input
+        id="apiUrlInput"
+        type="text"
+        placeholder="API URL"
       >
 
-        <div class="canvas-header">
 
-          <span class="canvas-title">
-            LIVE PREVIEW
-          </span>
+      <label for="modelInput">
+        Model
+      </label>
 
-          <button
-            class="canvas-clear"
-            id="clearPreviewButton"
-            type="button"
-          >
-            Clear
-          </button>
-
-        </div>
+      <input
+        id="modelInput"
+        type="text"
+        placeholder="Model name"
+      >
 
 
-        <div
-          class="preview"
-          id="preview"
-        >
+      <label for="apiKeyInput">
+        API Key
+      </label>
 
-          <div class="preview-empty">
-
-            <span class="preview-icon">
-              ◫
-            </span>
-
-            <p>
-              Files, previews, projects and
-              generated content will appear here.
-            </p>
-
-          </div>
-
-        </div>
-
-      </aside>
-
-    </div>
+      <input
+        id="apiKeyInput"
+        type="password"
+        placeholder="Paste API key"
+        autocomplete="off"
+      >
 
 
-    <!-- =====================================
-         INPUT AREA
-    ====================================== -->
+      <button
+        class="save-provider"
+        id="saveProviderButton"
+        type="button"
+      >
+        Save API Settings
+      </button>
 
-    <div class="input-area">
-
-
-      <!-- ATTACHMENT LIST -->
 
       <div
-        class="attachment-name"
-        id="attachmentName"
+        class="settings-status"
+        id="settingsStatus"
       ></div>
 
 
-      <div class="input-box">
+      <hr>
 
 
-        <!-- ATTACH -->
+      <h3>
+        Memory
+      </h3>
 
-        <button
-          class="attach"
-          id="attachButton"
-          type="button"
-          aria-label="Attach files"
-        >
-          📎
-        </button>
-
-
-        <input
-          type="file"
-          id="fileInput"
-          multiple
-          hidden
-        >
-
-
-        <!-- MESSAGE -->
-
-        <div class="input-wrap">
-
-          <textarea
-            id="messageInput"
-            placeholder="Message MASTER AI..."
-            rows="1"
-            autocomplete="off"
-          ></textarea>
-
-        </div>
-
-
-        <!-- LIVE -->
-
-        <button
-          class="mic-button"
-          id="micButton"
-          type="button"
-          aria-label="Start voice input"
-          title="Voice input"
-        >
-          🎙
-        </button>
-
-
-        <!-- SEND -->
-
-        <button
-          class="send"
-          id="sendButton"
-          type="button"
-          aria-label="Send message"
-        >
-          ↑
-        </button>
-
-      </div>
-
-
-      <div class="input-footer">
-
-        <span
-          id="attachmentStatus"
-        >
-          Attach multiple files
-        </span>
-
-
-        <span>
-          Mastermind always active
-        </span>
-
-      </div>
-
-    </div>
-
-
-  </main>
-
-</div>
-
-
-<!-- =====================================
-     MASTER LIVE MODAL
-===================================== -->
-
-<div
-  class="modal live-modal"
-  id="liveModal"
-  aria-hidden="true"
->
-
-  <div class="live-background"></div>
-
-
-  <div class="live-container">
-
-
-    <div class="live-header">
-
-      <div>
-
-        <span class="live-label">
-          MASTER LIVE
-        </span>
-
-        <div
-          class="live-status"
-          id="liveStatus"
-        >
-          Tap the circle to start
-        </div>
-
-      </div>
-
-
-      <button
-        class="live-close"
-        id="closeLiveButton"
-        type="button"
-        aria-label="Close MASTER LIVE"
-      >
-        ×
-      </button>
-
-    </div>
-
-
-    <!-- LIVE CIRCLE -->
-
-    <button
-      class="live-orb"
-      id="liveOrb"
-      type="button"
-      aria-label="Start voice conversation"
-    >
-
-      <span class="live-orb-ring ring-a"></span>
-
-      <span class="live-orb-ring ring-b"></span>
-
-      <span class="live-orb-ring ring-c"></span>
-
-
-      <span class="live-orb-core">
-
-        <span class="live-wave">
-          ∿
-        </span>
-
-      </span>
-
-    </button>
-
-
-    <!-- LIVE TRANSCRIPT -->
-
-    <div
-      class="live-transcript"
-      id="liveTranscript"
-    >
-
-      <p class="transcript-placeholder">
-        Your live conversation will appear here.
+      <p class="settings-note">
+        Clear remembered information stored
+        in this browser.
       </p>
 
-    </div>
-
-
-    <div class="live-footer">
 
       <button
-        class="live-control"
-        id="toggleSpeechButton"
+        class="save-provider"
+        id="clearMemoryButton"
         type="button"
       >
-        🔊 Voice On
-      </button>
-
-
-      <button
-        class="live-control danger-control"
-        id="stopLiveButton"
-        type="button"
-      >
-        Stop
+        Clear Memory
       </button>
 
     </div>
 
   </div>
 
-</div>
 
-
-<!-- =====================================
-     SETTINGS MODAL
-===================================== -->
-
-<div
-  class="modal"
-  id="settingsModal"
-  aria-hidden="true"
->
+  <!-- ==============================
+       PROJECT MODAL
+  =============================== -->
 
   <div
-    class="modal-box settings-box"
+    class="modal"
+    id="projectModal"
   >
 
+    <div
+      class="modal-box"
+      role="dialog"
+      aria-modal="true"
+    >
 
-    <div class="settings-header">
+      <h2>
+        Create Project
+      </h2>
 
-      <div>
 
-        <h2>
-          MASTER Settings
-        </h2>
+      <label for="projectNameInput">
+        Project Name
+      </label>
 
-        <p class="settings-subtitle">
-          AI providers, memory and system controls
-        </p>
+
+      <input
+        id="projectNameInput"
+        type="text"
+        placeholder="My new project"
+      >
+
+
+      <div class="modal-actions">
+
+        <button
+          id="cancelProjectButton"
+          type="button"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          id="saveProjectButton"
+          type="button"
+        >
+          Create
+        </button>
 
       </div>
 
-
-      <button
-        id="closeSettingsButton"
-        type="button"
-        aria-label="Close settings"
-      >
-        ×
-      </button>
-
-    </div>
-
-
-    <hr>
-
-
-    <!-- PROVIDER -->
-
-    <h3>
-      AI Provider
-    </h3>
-
-
-    <label for="providerSelect">
-      Active Provider
-    </label>
-
-
-    <select
-      id="providerSelect"
-    >
-      <option value="deepseek">
-        DeepSeek
-      </option>
-
-      <option value="openai">
-        OpenAI
-      </option>
-
-      <option value="gemini">
-        Google Gemini
-      </option>
-
-      <option value="claude">
-        Claude
-      </option>
-
-      <option value="custom">
-        Custom API
-      </option>
-
-    </select>
-
-
-    <label for="apiUrlInput">
-      API URL
-    </label>
-
-
-    <input
-      id="apiUrlInput"
-      type="url"
-      placeholder="https://..."
-    >
-
-
-    <label for="modelInput">
-      Model
-    </label>
-
-
-    <input
-      id="modelInput"
-      type="text"
-      placeholder="Model name"
-    >
-
-
-    <label for="apiKeyInput">
-      API Key
-    </label>
-
-
-    <input
-      id="apiKeyInput"
-      type="password"
-      placeholder="Paste API key"
-      autocomplete="off"
-    >
-
-
-    <button
-      class="save-provider"
-      id="saveProviderButton"
-      type="button"
-    >
-      Save Provider
-    </button>
-
-
-    <div
-      class="settings-status"
-      id="settingsStatus"
-    ></div>
-
-
-    <hr>
-
-
-    <!-- MEMORY -->
-
-    <h3>
-      Memory
-    </h3>
-
-
-    <p class="settings-note">
-      MASTER can use saved preferences and conversation
-      context. Memory controls will be managed here.
-    </p>
-
-
-    <div class="settings-row">
-
-      <span>
-        Personal memory
-      </span>
-
-      <span
-        class="setting-badge active"
-        id="memoryStatus"
-      >
-        Active
-      </span>
-
-    </div>
-
-
-    <button
-      class="secondary-button"
-      id="clearMemoryButton"
-      type="button"
-    >
-      Clear Local Memory
-    </button>
-
-
-    <hr>
-
-
-    <!-- MULTI AI -->
-
-    <h3>
-      Multi-AI Intelligence
-    </h3>
-
-
-    <p class="settings-note">
-      MASTER can be expanded with multiple AI providers.
-      The orchestrator decides which configured providers
-      are available for a task.
-    </p>
-
-
-    <div
-      class="provider-summary"
-      id="providerSummary"
-    ></div>
-
-
-    <button
-      class="secondary-button"
-      id="addProviderButton"
-      type="button"
-    >
-      + Add Provider
-    </button>
-
-
-  </div>
-
-</div>
-
-
-<!-- =====================================
-     PROJECT MODAL
-===================================== -->
-
-<div
-  class="modal"
-  id="projectModal"
-  aria-hidden="true"
->
-
-  <div class="modal-box">
-
-    <h2>
-      Create Project
-    </h2>
-
-
-    <label for="projectNameInput">
-      Project Name
-    </label>
-
-
-    <input
-      id="projectNameInput"
-      type="text"
-      placeholder="My project"
-    >
-
-
-    <div class="modal-actions">
-
-      <button
-        id="cancelProjectButton"
-        type="button"
-      >
-        Cancel
-      </button>
-
-
-      <button
-        id="saveProjectButton"
-        type="button"
-      >
-        Create
-      </button>
-
     </div>
 
   </div>
 
-</div>
 
+  <!-- ==============================
+       SCRIPTS
 
-<!-- =====================================
-     SCRIPTS
-===================================== -->
+       Order is important:
+       Config → Intelligence → App
+  =============================== -->
 
-<script src="api-config.js"></script>
+  <script src="api-config.js"></script>
 
-<script src="mastermind.js"></script>
+  <script src="mastermind.js"></script>
 
-<script src="app.js"></script>
+  <script src="app.js"></script>
 
 </body>
 </html>
