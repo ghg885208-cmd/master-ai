@@ -17,51 +17,67 @@
 
   <div class="app">
 
-    <!-- Sidebar -->
+    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
 
       <div class="logo">
         MASTER
       </div>
 
-      <button class="new-chat">
+      <button class="new-chat" id="newChatButton">
         ＋ New Chat
       </button>
 
+
+      <!-- HISTORY -->
       <div class="history">
 
         <div class="section-title">
           History
         </div>
 
-        <div class="history-item">
-          Welcome to MASTER
-        </div>
-
-        <div class="history-item">
-          My first project
+        <div
+          class="history-list"
+          id="historyList"
+        >
+          <!-- Chats JavaScript se aayengi -->
         </div>
 
       </div>
 
+
+      <!-- PROJECTS -->
       <div class="projects">
 
         <div class="section-title">
           Projects
         </div>
 
-        <div class="history-item">
-          ＋ Create Project
+        <div
+          class="project-list"
+          id="projectList"
+        >
+          <!-- Projects JavaScript se aayenge -->
         </div>
+
+
+        <button
+          class="create-project"
+          id="createProjectButton"
+        >
+          ＋ Create Project
+        </button>
 
       </div>
 
     </aside>
 
 
-    <!-- Main area -->
+    <!-- MAIN -->
     <main class="main">
 
+
+      <!-- TOP BAR -->
       <header class="topbar">
 
         <button
@@ -72,9 +88,11 @@
           ☰
         </button>
 
-        <strong>
+
+        <strong id="chatTitle">
           MASTER
         </strong>
+
 
         <span class="status">
           Personal AI
@@ -83,10 +101,15 @@
       </header>
 
 
+      <!-- CONTENT -->
       <div class="content">
 
-        <!-- Chat -->
-        <section class="chat">
+
+        <!-- CHAT -->
+        <section
+          class="chat"
+          id="chat"
+        >
 
           <div class="welcome">
 
@@ -104,8 +127,11 @@
         </section>
 
 
-        <!-- Canvas -->
-        <aside class="canvas">
+        <!-- CANVAS -->
+        <aside
+          class="canvas"
+          id="canvas"
+        >
 
           <div class="canvas-header">
 
@@ -113,13 +139,17 @@
               Canvas
             </span>
 
-            <span>
+            <span id="canvasStatus">
               Preview
             </span>
 
           </div>
 
-          <div class="preview">
+
+          <div
+            class="preview"
+            id="preview"
+          >
             Your work will appear here
           </div>
 
@@ -128,44 +158,56 @@
       </div>
 
 
-      <!-- Input -->
+      <!-- INPUT -->
       <div class="input-area">
 
         <div class="input-box">
 
+
+          <!-- FILE INPUT -->
           <input
             id="fileInput"
             type="file"
+            multiple
             hidden
           >
 
+
+          <!-- ATTACH -->
           <button
             class="attach"
+            id="attachButton"
             type="button"
-            aria-label="Attach file"
+            aria-label="Attach files"
           >
             📎
           </button>
 
 
+          <!-- TEXT INPUT -->
           <div class="input-wrap">
 
             <input
+              id="messageInput"
               type="text"
               placeholder="Ask MASTER anything..."
               autocomplete="off"
             >
 
+
             <div
               class="attachment-name"
+              id="attachmentName"
               aria-live="polite"
             ></div>
 
           </div>
 
 
+          <!-- SEND -->
           <button
             class="send"
+            id="sendButton"
             type="button"
             aria-label="Send message"
           >
@@ -177,6 +219,54 @@
       </div>
 
     </main>
+
+  </div>
+
+
+  <!-- PROJECT MODAL -->
+  <div
+    class="modal"
+    id="projectModal"
+  >
+
+    <div class="modal-box">
+
+      <h2>
+        Create Project
+      </h2>
+
+      <p>
+        Give your project a name.
+      </p>
+
+
+      <input
+        type="text"
+        id="projectNameInput"
+        placeholder="My Project"
+      >
+
+
+      <div class="modal-actions">
+
+        <button
+          class="modal-cancel"
+          id="cancelProjectButton"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          class="modal-create"
+          id="confirmProjectButton"
+        >
+          Create
+        </button>
+
+      </div>
+
+    </div>
 
   </div>
 
