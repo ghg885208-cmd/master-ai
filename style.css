@@ -14,6 +14,8 @@
   --user: #26345f;
   --master: #1a1e28;
   --danger: #ff6b6b;
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * {
@@ -24,22 +26,22 @@ html,
 body {
   width: 100%;
   height: 100%;
+  height: 100dvh;
   margin: 0;
+  padding: 0;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   overflow: hidden;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -55,8 +57,13 @@ button {
 .app {
   width: 100%;
   height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+
   display: flex;
   overflow: hidden;
+
+  padding-bottom: var(--safe-bottom);
 }
 
 
@@ -68,10 +75,13 @@ button {
   width: 260px;
   min-width: 260px;
   height: 100%;
+
   background: #0e1118;
   border-right: 1px solid var(--border);
+
   display: flex;
   flex-direction: column;
+
   padding: 16px;
   overflow: hidden;
 }
@@ -129,9 +139,12 @@ button {
   border: none;
   background: transparent;
   color: #c8ced9;
+
   padding: 10px;
   border-radius: 8px;
+
   text-align: left;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -177,10 +190,16 @@ button {
 
 .main {
   min-width: 0;
+  min-height: 0;
+
   flex: 1;
+
   height: 100%;
+
   display: flex;
   flex-direction: column;
+
+  overflow: hidden;
 }
 
 
@@ -191,12 +210,18 @@ button {
 .topbar {
   height: 58px;
   min-height: 58px;
+
   border-bottom: 1px solid var(--border);
+
   display: flex;
   align-items: center;
   gap: 15px;
+
   padding: 0 20px;
+
   background: rgba(11, 13, 18, 0.9);
+
+  flex-shrink: 0;
 }
 
 .topbar strong {
@@ -224,7 +249,9 @@ button {
 .content {
   flex: 1;
   min-height: 0;
+
   display: flex;
+
   overflow: hidden;
 }
 
@@ -236,9 +263,16 @@ button {
 .chat {
   flex: 1;
   min-width: 0;
+  min-height: 0;
+
   overflow-y: auto;
+  overflow-x: hidden;
+
   padding: 30px;
+
   scroll-behavior: smooth;
+
+  -webkit-overflow-scrolling: touch;
 }
 
 .welcome {
@@ -260,10 +294,14 @@ button {
 .message {
   width: fit-content;
   max-width: min(800px, 90%);
+
   padding: 14px 16px;
   margin: 12px 0;
+
   border-radius: 14px;
+
   line-height: 1.55;
+
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -305,19 +343,26 @@ button {
 .canvas {
   width: 320px;
   min-width: 280px;
+
   border-left: 1px solid var(--border);
   background: #0e1118;
+
   display: flex;
   flex-direction: column;
+
+  min-height: 0;
 }
 
 .canvas-header {
   min-height: 52px;
   padding: 0 15px;
+
   border-bottom: 1px solid var(--border);
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   color: var(--muted);
   font-size: 12px;
 }
@@ -329,35 +374,57 @@ button {
 
 .preview {
   flex: 1;
+  min-height: 0;
+
   margin: 14px;
   padding: 16px;
+
   border: 1px dashed var(--border);
   border-radius: 12px;
+
   color: var(--muted);
+
   overflow: auto;
   line-height: 1.5;
 }
 
 
 /* =========================================
-   INPUT
+   INPUT AREA
 ========================================= */
 
 .input-area {
-  padding: 15px 20px 20px;
+  flex-shrink: 0;
+
+  width: 100%;
+
+  padding:
+    15px
+    20px
+    calc(20px + var(--safe-bottom));
+
   border-top: 1px solid var(--border);
+
+  background: var(--bg);
 }
 
 .input-box {
+  width: 100%;
   max-width: 950px;
+
   margin: auto;
+
   min-height: 58px;
+
   border: 1px solid var(--border);
   background: var(--panel);
+
   border-radius: 16px;
+
   display: flex;
   align-items: center;
   gap: 8px;
+
   padding: 8px;
 }
 
@@ -368,11 +435,17 @@ button {
 
 #messageInput {
   width: 100%;
+  min-width: 0;
+
   border: none;
   outline: none;
+
   background: transparent;
   color: var(--text);
+
   padding: 10px;
+
+  font-size: 16px;
 }
 
 #messageInput::placeholder {
@@ -383,8 +456,12 @@ button {
 .send {
   width: 42px;
   height: 42px;
+
+  min-width: 42px;
+
   border: none;
   border-radius: 11px;
+
   display: grid;
   place-items: center;
 }
@@ -403,6 +480,7 @@ button {
 .send {
   background: var(--accent);
   color: white;
+
   font-size: 20px;
   font-weight: bold;
 }
@@ -418,13 +496,18 @@ button {
 
 .attachment-name {
   display: none;
+
   padding: 7px 10px;
   margin-bottom: 4px;
+
   border-radius: 8px;
+
   background: #202735;
   color: #b9c2d3;
+
   font-size: 12px;
-  max-height: 65px;
+
+  max-height: 100px;
   overflow: auto;
 }
 
@@ -440,11 +523,18 @@ button {
 .modal {
   position: fixed;
   inset: 0;
+
   z-index: 100;
+
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+
+  padding:
+    20px
+    20px
+    calc(20px + var(--safe-bottom));
+
   background: rgba(0, 0, 0, 0.65);
 }
 
@@ -454,10 +544,13 @@ button {
 
 .modal-box {
   width: min(100%, 450px);
-  max-height: 90vh;
+  max-height: 90dvh;
+
   overflow-y: auto;
+
   background: #141822;
   border: 1px solid var(--border);
+
   border-radius: 16px;
   padding: 22px;
 }
@@ -472,18 +565,23 @@ button {
 
 .modal-box label {
   display: block;
+
   color: var(--muted);
   font-size: 13px;
+
   margin: 15px 0 7px;
 }
 
 .modal-box input,
 .modal-box select {
   width: 100%;
+
   border: 1px solid var(--border);
   border-radius: 9px;
+
   background: #0d1017;
   color: var(--text);
+
   outline: none;
   padding: 12px;
 }
@@ -497,6 +595,7 @@ button {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+
   margin-top: 18px;
 }
 
@@ -504,7 +603,9 @@ button {
 .save-provider {
   border: none;
   border-radius: 9px;
+
   padding: 11px 16px;
+
   color: white;
   background: #252b38;
 }
@@ -602,17 +703,33 @@ button {
 
 @media (max-width: 800px) {
 
+  html,
+  body {
+    height: 100dvh;
+  }
+
   body {
     overflow: hidden;
   }
 
+  .app {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
   .sidebar {
     position: fixed;
+
     z-index: 200;
+
     top: 0;
     left: 0;
+
+    height: 100dvh;
+
     transform: translateX(-105%);
     transition: transform 0.25s ease;
+
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
   }
 
@@ -628,12 +745,28 @@ button {
     display: none;
   }
 
+  .main {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .content {
+    min-height: 0;
+  }
+
   .chat {
     padding: 20px 14px;
   }
 
   .input-area {
-    padding: 10px 10px 14px;
+    padding:
+      10px
+      10px
+      calc(18px + var(--safe-bottom));
+  }
+
+  .input-box {
+    min-height: 60px;
   }
 
   .topbar {
@@ -642,6 +775,10 @@ button {
 
   .message {
     max-width: 94%;
+  }
+
+  .welcome {
+    margin: 8vh auto;
   }
 
 }
@@ -662,15 +799,25 @@ button {
   }
 
   .welcome {
-    margin: 9vh auto;
+    margin: 7vh auto;
   }
 
   .modal {
-    padding: 10px;
+    padding:
+      10px
+      10px
+      calc(10px + var(--safe-bottom));
   }
 
   .modal-box {
     padding: 17px;
+  }
+
+  .input-area {
+    padding:
+      8px
+      8px
+      calc(14px + var(--safe-bottom));
   }
 
 }
