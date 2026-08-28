@@ -1,25 +1,101 @@
 /* =========================
-   MASTER — PHASE 2
+   MASTER — APP
 ========================= */
 
+/* =========================
+   AI PROVIDERS
+========================= */
 
-/* ELEMENTS */
+const AI_PROVIDERS = {
+  deepseek: {
+    name: "DeepSeek",
+    apiKey: "sk-7f4c469fbe6b4f3ba1a8196f0cbc1b92",
+    endpoint: "https://api.deepseek.com/chat/completions",
+    model: "deepseek-v4-flash",
+    enabled: true
+  },
+
+  // FUTURE PROVIDERS
+  openai: {
+    name: "OpenAI",
+    apiKey: "",
+    endpoint: "",
+    model: "",
+    enabled: false
+  },
+
+  gemini: {
+    name: "Gemini",
+    apiKey: "",
+    endpoint: "",
+    model: "",
+    enabled: false
+  },
+
+  claude: {
+    name: "Claude",
+    apiKey: "",
+    endpoint: "",
+    model: "",
+    enabled: false
+  }
+};
+
+
+/* =========================
+   SETTINGS
+========================= */
+
+const ACTIVE_PROVIDER = "deepseek";
+
+const SYSTEM_PROMPT = `
+You are MASTER, a helpful personal AI workspace.
+
+You help with:
+- General questions
+- Coding
+- Websites
+- Writing
+- Research planning
+- Projects
+- Problem solving
+
+Be clear and useful.
+Remember the context provided in the current conversation.
+`;
+
+
+/* =========================
+   ELEMENTS
+========================= */
 
 const input = document.querySelector("#messageInput");
 const sendButton = document.querySelector("#sendButton");
 const chat = document.querySelector("#chat");
 
-const newChatButton = document.querySelector("#newChatButton");
+const newChatButton =
+  document.querySelector("#newChatButton");
 
-const attachButton = document.querySelector("#attachButton");
-const fileInput = document.querySelector("#fileInput");
-const attachmentName = document.querySelector("#attachmentName");
+const attachButton =
+  document.querySelector("#attachButton");
 
-const menuButton = document.querySelector("#menuButton");
-const sidebar = document.querySelector("#sidebar");
+const fileInput =
+  document.querySelector("#fileInput");
 
-const historyList = document.querySelector("#historyList");
-const projectList = document.querySelector("#projectList");
+const attachmentName =
+  document.querySelector("#attachmentName");
+
+const menuButton =
+  document.querySelector("#menuButton");
+
+const sidebar =
+  document.querySelector("#sidebar");
+
+const historyList =
+  document.querySelector("#historyList");
+
+const projectList =
+  document.querySelector("#projectList");
 
 const createProjectButton =
   document.querySelector("#createProjectButton");
@@ -43,21 +119,32 @@ const preview =
   document.querySelector("#preview");
 
 
-/* DATA */
+/* =========================
+   DATA
+========================= */
 
 let chats =
-  JSON.parse(localStorage.getItem("masterChats")) || [];
+  JSON.parse(
+    localStorage.getItem("masterChats")
+  ) || [];
 
 let projects =
-  JSON.parse(localStorage.getItem("masterProjects")) || [];
+  JSON.parse(
+    localStorage.getItem("masterProjects")
+  ) || [];
 
 let currentChatId =
-  localStorage.getItem("masterCurrentChat") || null;
+  localStorage.getItem("masterCurrentChat")
+  || null;
 
 let selectedFiles = [];
 
+let isGenerating = false;
 
-/* HELPERS */
+
+/* =========================
+   SAVE DATA
+========================= */
 
 function saveData() {
 
@@ -73,23 +160,29 @@ function saveData() {
 
   localStorage.setItem(
     "masterCurrentChat",
-    currentChatId
+    currentChatId || ""
   );
 
 }
 
+
+/* =========================
+   CREATE ID
+========================= */
 
 function createId() {
 
   return (
     Date.now().toString(36) +
-    Math.random().toString(36).slice(2, 7)
+    Math.random().toString(36).slice(2, 9)
   );
 
 }
 
 
-/* CREATE CHAT */
+/* =========================
+   CREATE CHAT
+========================= */
 
 function createChat(title = "New Chat") {
 
@@ -101,7 +194,9 @@ function createChat(title = "New Chat") {
 
     messages: [],
 
-    createdAt: Date.now()
+    createdAt: Date.now(),
+
+    updatedAt: Date.now()
 
   };
 
@@ -113,7 +208,6 @@ function createChat(title = "New Chat") {
 
   saveData();
 
-
   renderHistory();
 
   renderCurrentChat();
@@ -124,21 +218,27 @@ function createChat(title = "New Chat") {
 }
 
 
-/* GET CURRENT CHAT */
+/* =========================
+   GET CURRENT CHAT
+========================= */
 
 function getCurrentChat() {
 
   return chats.find(
-    chatItem =>
-      chatItem.id === currentChatId
+    item => item.id === currentChatId
   );
 
 }
 
 
-/* RENDER HISTORY */
+/* =========================
+   RENDER HISTORY
+========================= */
 
 function renderHistory() {
+
+  if (!historyList) return;
+
 
   historyList.innerHTML = "";
 
@@ -177,29 +277,34 @@ function renderHistory() {
 
         saveData();
 
-
         renderHistory();
 
-
         renderCurrentChat();
-
 
         closeMobileMenu();
 
       }
+
     );
 
 
-    historyList.appendChild(button);
+    historyList.appendChild(
+      button
+    );
 
   });
 
 }
 
 
-/* RENDER CURRENT CHAT */
+/* =========================
+   RENDER CURRENT CHAT
+========================= */
 
 function renderCurrentChat() {
+
+  if (!chat) return;
+
 
   chat.innerHTML = "";
 
@@ -214,13 +319,10 @@ function renderCurrentChat() {
 
       <div class="welcome">
 
-        <h1>
-          How can I help?
-        </h1>
+        <h1>How can I help?</h1>
 
         <p>
           I'm MASTER, your personal AI workspace.
-          Ask, create, analyse, build and explore.
         </p>
 
       </div>
@@ -228,8 +330,12 @@ function renderCurrentChat() {
     `;
 
 
-    chatTitle.textContent =
-      "MASTER";
+    if (chatTitle) {
+
+      chatTitle.textContent =
+        "MASTER";
+
+    }
 
 
     return;
@@ -237,8 +343,12 @@ function renderCurrentChat() {
   }
 
 
-  chatTitle.textContent =
-    currentChat.title;
+  if (chatTitle) {
+
+    chatTitle.textContent =
+      currentChat.title;
+
+  }
 
 
   if (
@@ -249,9 +359,7 @@ function renderCurrentChat() {
 
       <div class="welcome">
 
-        <h1>
-          How can I help?
-        </h1>
+        <h1>How can I help?</h1>
 
         <p>
           Start a conversation with MASTER.
@@ -285,13 +393,18 @@ function renderCurrentChat() {
 }
 
 
-/* ADD MESSAGE TO SCREEN */
+/* =========================
+   ADD MESSAGE TO SCREEN
+========================= */
 
 function addMessageToScreen(
   text,
   sender,
   files = []
 ) {
+
+  if (!chat) return null;
+
 
   const message =
     document.createElement("div");
@@ -301,9 +414,7 @@ function addMessageToScreen(
     `message ${sender}`;
 
 
-  if (
-    sender === "master"
-  ) {
+  if (sender === "master") {
 
     const name =
       document.createElement("strong");
@@ -339,9 +450,7 @@ function addMessageToScreen(
   }
 
 
-  if (
-    files.length > 0
-  ) {
+  if (files.length > 0) {
 
     files.forEach(
       fileName => {
@@ -358,7 +467,9 @@ function addMessageToScreen(
           `📎 ${fileName}`;
 
 
-        message.appendChild(note);
+        message.appendChild(
+          note
+        );
 
       }
     );
@@ -366,12 +477,19 @@ function addMessageToScreen(
   }
 
 
-  chat.appendChild(message);
+  chat.appendChild(
+    message
+  );
+
+
+  return message;
 
 }
 
 
-/* ADD MESSAGE TO DATA */
+/* =========================
+   SAVE MESSAGE
+========================= */
 
 function saveMessage(
   text,
@@ -391,7 +509,7 @@ function saveMessage(
   }
 
 
-  currentChat.messages.push({
+  const message = {
 
     id: createId(),
 
@@ -403,21 +521,27 @@ function saveMessage(
 
     createdAt: Date.now()
 
-  });
+  };
+
+
+  currentChat.messages.push(
+    message
+  );
+
+
+  currentChat.updatedAt =
+    Date.now();
 
 
   /* First user message
      becomes chat title */
 
   if (
-
     sender === "user" &&
-
     currentChat.messages.filter(
       message =>
         message.sender === "user"
     ).length === 1
-
   ) {
 
     const cleanTitle =
@@ -435,12 +559,281 @@ function saveMessage(
 
   renderHistory();
 
+
+  return message;
+
 }
 
 
-/* SEND MESSAGE */
+/* =========================
+   BUILD AI MESSAGES
+========================= */
 
-function sendMessage() {
+function buildAIMessages() {
+
+  const currentChat =
+    getCurrentChat();
+
+
+  const messages = [
+
+    {
+      role: "system",
+
+      content:
+        SYSTEM_PROMPT
+    }
+
+  ];
+
+
+  if (!currentChat) {
+
+    return messages;
+
+  }
+
+
+  currentChat.messages.forEach(
+    message => {
+
+      if (
+        message.sender === "user"
+      ) {
+
+        messages.push({
+
+          role: "user",
+
+          content:
+            message.text
+
+        });
+
+      }
+
+
+      if (
+        message.sender === "master"
+      ) {
+
+        messages.push({
+
+          role: "assistant",
+
+          content:
+            message.text
+
+        });
+
+      }
+
+    }
+  );
+
+
+  return messages;
+
+}
+
+
+/* =========================
+   GET ACTIVE PROVIDER
+========================= */
+
+function getActiveProvider() {
+
+  return AI_PROVIDERS[
+    ACTIVE_PROVIDER
+  ];
+
+}
+
+
+/* =========================
+   CALL AI
+========================= */
+
+async function callAI() {
+
+  const provider =
+    getActiveProvider();
+
+
+  if (!provider) {
+
+    throw new Error(
+      "AI provider not found."
+    );
+
+  }
+
+
+  if (
+    !provider.enabled
+  ) {
+
+    throw new Error(
+      "AI provider is disabled."
+    );
+
+  }
+
+
+  if (
+    !provider.apiKey ||
+    provider.apiKey.includes(
+      "PASTE_YOUR"
+    )
+  ) {
+
+    throw new Error(
+      "API key is missing."
+    );
+
+  }
+
+
+  const messages =
+    buildAIMessages();
+
+
+  const response =
+    await fetch(
+      provider.endpoint,
+
+      {
+
+        method: "POST",
+
+
+        headers: {
+
+          "Content-Type":
+            "application/json",
+
+
+          "Authorization":
+            `Bearer ${provider.apiKey}`
+
+        },
+
+
+        body:
+
+          JSON.stringify({
+
+            model:
+              provider.model,
+
+
+            messages:
+              messages,
+
+
+            stream:
+              false
+
+          })
+
+      }
+
+    );
+
+
+  if (!response.ok) {
+
+    let errorText =
+      "API request failed.";
+
+
+    try {
+
+      const errorData =
+        await response.json();
+
+
+      errorText =
+        errorData.error?.message ||
+        errorText;
+
+    } catch (error) {}
+
+
+    throw new Error(
+      errorText
+    );
+
+  }
+
+
+  const data =
+    await response.json();
+
+
+  const answer =
+    data?.choices?.[0]
+      ?.message
+      ?.content;
+
+
+  if (!answer) {
+
+    throw new Error(
+      "AI returned an empty response."
+    );
+
+  }
+
+
+  return answer;
+
+}
+
+
+/* =========================
+   LOADING MESSAGE
+========================= */
+
+function addLoadingMessage() {
+
+  const message =
+    document.createElement("div");
+
+
+  message.className =
+    "message master loading-message";
+
+
+  message.textContent =
+    "MASTER is thinking…";
+
+
+  chat.appendChild(
+    message
+  );
+
+
+  scrollChatToBottom();
+
+
+  return message;
+
+}
+
+
+/* =========================
+   SEND MESSAGE
+========================= */
+
+async function sendMessage() {
+
+  if (isGenerating) {
+
+    return;
+
+  }
+
 
   const text =
     input.value.trim();
@@ -463,7 +856,9 @@ function sendMessage() {
 
 
   const welcome =
-    document.querySelector(".welcome");
+    document.querySelector(
+      ".welcome"
+    );
 
 
   if (welcome) {
@@ -498,443 +893,39 @@ function sendMessage() {
   selectedFiles = [];
 
 
-  fileInput.value = "";
+  if (fileInput) {
+
+    fileInput.value = "";
+
+  }
 
 
-  attachmentName.textContent = "";
+  if (attachmentName) {
+
+    attachmentName.textContent =
+      "";
 
 
-  attachmentName.classList.remove(
-    "show"
-  );
+    attachmentName.classList.remove(
+      "show"
+    );
+
+  }
 
 
   scrollChatToBottom();
 
 
-  /* PROTOTYPE RESPONSE */
-
-  setTimeout(() => {
-
-    const response =
-
-      "I'm running in prototype mode. " +
-      "Real AI API responses will be connected " +
-      "in the next development phase.";
+  isGenerating = true;
 
 
-    saveMessage(
-      response,
-      "master"
-    );
+  if (sendButton) {
 
-
-    addMessageToScreen(
-      response,
-      "master"
-    );
-
-
-    scrollChatToBottom();
-
-  }, 500);
-
-}
-
-
-/* SEND BUTTON */
-
-sendButton.addEventListener(
-  "click",
-  sendMessage
-);
-
-
-/* ENTER */
-
-input.addEventListener(
-  "keydown",
-
-  event => {
-
-    if (
-
-      event.key === "Enter" &&
-
-      !event.shiftKey
-
-    ) {
-
-      event.preventDefault();
-
-      sendMessage();
-
-    }
+    sendButton.disabled =
+      true;
 
   }
-);
 
 
-/* ATTACH FILES */
-
-attachButton.addEventListener(
-  "click",
-
-  () => {
-
-    fileInput.click();
-
-  }
-);
-
-
-fileInput.addEventListener(
-  "change",
-
-  () => {
-
-    selectedFiles =
-      Array.from(
-        fileInput.files
-      );
-
-
-    if (
-      selectedFiles.length > 0
-    ) {
-
-      const names =
-        selectedFiles
-          .map(
-            file => file.name
-          )
-          .join(", ");
-
-
-      attachmentName.textContent =
-        `Attached: ${names}`;
-
-
-      attachmentName.classList.add(
-        "show"
-      );
-
-    }
-
-  }
-);
-
-
-/* NEW CHAT */
-
-newChatButton.addEventListener(
-  "click",
-
-  () => {
-
-    createChat();
-
-    input.focus();
-
-    closeMobileMenu();
-
-  }
-);
-
-
-/* PROJECTS */
-
-function renderProjects() {
-
-  projectList.innerHTML = "";
-
-
-  projects.forEach(
-    project => {
-
-      const button =
-        document.createElement("button");
-
-
-      button.className =
-        "project-item";
-
-
-      button.textContent =
-        project.name;
-
-
-      button.addEventListener(
-        "click",
-
-        () => {
-
-          preview.textContent =
-            `Project: ${project.name}`;
-
-
-          closeMobileMenu();
-
-        }
-      );
-
-
-      projectList.appendChild(
-        button
-      );
-
-    }
-  );
-
-}
-
-
-/* OPEN PROJECT MODAL */
-
-createProjectButton.addEventListener(
-  "click",
-
-  () => {
-
-    projectModal.classList.add(
-      "show"
-    );
-
-
-    setTimeout(
-      () => {
-
-        projectNameInput.focus();
-
-      },
-
-      50
-    );
-
-  }
-);
-
-
-/* CANCEL PROJECT */
-
-cancelProjectButton.addEventListener(
-  "click",
-
-  () => {
-
-    projectModal.classList.remove(
-      "show"
-    );
-
-
-    projectNameInput.value = "";
-
-  }
-);
-
-
-/* CREATE PROJECT */
-
-function createProject() {
-
-  const name =
-    projectNameInput.value.trim();
-
-
-  if (!name) {
-
-    projectNameInput.focus();
-
-    return;
-
-  }
-
-
-  const project = {
-
-    id: createId(),
-
-    name: name,
-
-    createdAt: Date.now()
-
-  };
-
-
-  projects.unshift(
-    project
-  );
-
-
-  saveData();
-
-
-  renderProjects();
-
-
-  preview.textContent =
-    `Project created: ${name}`;
-
-
-  projectModal.classList.remove(
-    "show"
-  );
-
-
-  projectNameInput.value = "";
-
-
-  closeMobileMenu();
-
-}
-
-
-confirmProjectButton.addEventListener(
-  "click",
-  createProject
-);
-
-
-projectNameInput.addEventListener(
-  "keydown",
-
-  event => {
-
-    if (
-      event.key === "Enter"
-    ) {
-
-      createProject();
-
-    }
-
-  }
-);
-
-
-/* CLOSE MODAL
-   WHEN CLICKING OUTSIDE */
-
-projectModal.addEventListener(
-  "click",
-
-  event => {
-
-    if (
-      event.target === projectModal
-    ) {
-
-      projectModal.classList.remove(
-        "show"
-      );
-
-    }
-
-  }
-);
-
-
-/* MOBILE MENU */
-
-menuButton.addEventListener(
-  "click",
-
-  () => {
-
-    sidebar.classList.toggle(
-      "open"
-    );
-
-  }
-);
-
-
-function closeMobileMenu() {
-
-  if (
-    window.innerWidth <= 800
-  ) {
-
-    sidebar.classList.remove(
-      "open"
-    );
-
-  }
-
-}
-
-
-/* CLICK OUTSIDE MENU */
-
-document.addEventListener(
-  "click",
-
-  event => {
-
-    if (
-
-      window.innerWidth <= 800 &&
-
-      sidebar.classList.contains(
-        "open"
-      ) &&
-
-      !sidebar.contains(
-        event.target
-      ) &&
-
-      !menuButton.contains(
-        event.target
-      )
-
-    ) {
-
-      sidebar.classList.remove(
-        "open"
-      );
-
-    }
-
-  }
-);
-
-
-/* SCROLL */
-
-function scrollChatToBottom() {
-
-  chat.scrollTop =
-    chat.scrollHeight;
-
-}
-
-
-/* START APP */
-
-function startApp() {
-
-  if (
-
-    chats.length === 0 ||
-
-    !getCurrentChat()
-
-  ) {
-
-    createChat();
-
-  }
-
-
-  renderHistory();
-
-
-  renderProjects();
-
-
-  renderCurrentChat();
-
-}
-
-
-startApp();
+  const loadingMessage =
+    add
