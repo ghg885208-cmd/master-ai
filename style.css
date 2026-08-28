@@ -14,8 +14,6 @@
   --user: #26345f;
   --master: #1a1e28;
   --danger: #ff6b6b;
-
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * {
@@ -26,7 +24,6 @@ html,
 body {
   width: 100%;
   height: 100%;
-  height: 100dvh;
   margin: 0;
   padding: 0;
 }
@@ -58,12 +55,10 @@ button {
   width: 100%;
   height: 100vh;
   height: 100dvh;
-  min-height: 0;
 
   display: flex;
-  overflow: hidden;
 
-  padding-bottom: var(--safe-bottom);
+  overflow: hidden;
 }
 
 
@@ -83,6 +78,7 @@ button {
   flex-direction: column;
 
   padding: 16px;
+
   overflow: hidden;
 }
 
@@ -90,16 +86,21 @@ button {
   font-size: 20px;
   font-weight: 800;
   letter-spacing: 1px;
+
   padding: 8px 6px 20px;
 }
 
 .new-chat {
   width: 100%;
+
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text);
+
   border-radius: 10px;
+
   padding: 12px;
+
   text-align: left;
 }
 
@@ -119,9 +120,11 @@ button {
 
 .section-title {
   color: var(--muted);
+
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
+
   margin-bottom: 10px;
   padding-left: 6px;
 }
@@ -130,17 +133,21 @@ button {
 .project-list {
   display: flex;
   flex-direction: column;
+
   gap: 5px;
 }
 
 .history-item,
 .project-item {
   width: 100%;
+
   border: none;
   background: transparent;
+
   color: #c8ced9;
 
   padding: 10px;
+
   border-radius: 8px;
 
   text-align: left;
@@ -170,11 +177,16 @@ button {
 
 .settings-button {
   width: 100%;
+
   border: none;
   background: transparent;
+
   color: var(--muted);
+
   padding: 12px;
+
   text-align: left;
+
   border-radius: 8px;
 }
 
@@ -189,10 +201,10 @@ button {
 ========================================= */
 
 .main {
+  flex: 1;
+
   min-width: 0;
   min-height: 0;
-
-  flex: 1;
 
   height: 100%;
 
@@ -211,17 +223,18 @@ button {
   height: 58px;
   min-height: 58px;
 
+  flex-shrink: 0;
+
   border-bottom: 1px solid var(--border);
 
   display: flex;
   align-items: center;
+
   gap: 15px;
 
   padding: 0 20px;
 
   background: rgba(11, 13, 18, 0.9);
-
-  flex-shrink: 0;
 }
 
 .topbar strong {
@@ -230,10 +243,15 @@ button {
 
 .menu-button {
   display: none;
+
   border: none;
   background: transparent;
+
   color: white;
+
   font-size: 22px;
+
+  padding: 8px;
 }
 
 .status {
@@ -248,6 +266,7 @@ button {
 
 .content {
   flex: 1;
+
   min-height: 0;
 
   display: flex;
@@ -262,6 +281,7 @@ button {
 
 .chat {
   flex: 1;
+
   min-width: 0;
   min-height: 0;
 
@@ -277,12 +297,15 @@ button {
 
 .welcome {
   max-width: 700px;
+
   margin: 12vh auto;
+
   text-align: center;
 }
 
 .welcome h1 {
   font-size: clamp(30px, 5vw, 48px);
+
   margin-bottom: 12px;
 }
 
@@ -293,9 +316,11 @@ button {
 
 .message {
   width: fit-content;
+
   max-width: min(800px, 90%);
 
   padding: 14px 16px;
+
   margin: 12px 0;
 
   border-radius: 14px;
@@ -308,14 +333,19 @@ button {
 
 .message.user {
   margin-left: auto;
+
   background: var(--user);
+
   border-bottom-right-radius: 4px;
 }
 
 .message.master {
   margin-right: auto;
+
   background: var(--master);
+
   border: 1px solid var(--border);
+
   border-bottom-left-radius: 4px;
 }
 
@@ -326,8 +356,11 @@ button {
 
 .file-note {
   display: block;
+
   margin-top: 10px;
+
   color: var(--muted);
+
   font-size: 13px;
 }
 
@@ -345,6 +378,7 @@ button {
   min-width: 280px;
 
   border-left: 1px solid var(--border);
+
   background: #0e1118;
 
   display: flex;
@@ -355,6 +389,7 @@ button {
 
 .canvas-header {
   min-height: 52px;
+
   padding: 0 15px;
 
   border-bottom: 1px solid var(--border);
@@ -364,6 +399,7 @@ button {
   justify-content: space-between;
 
   color: var(--muted);
+
   font-size: 12px;
 }
 
@@ -374,6 +410,7 @@ button {
 
 .preview {
   flex: 1;
+
   min-height: 0;
 
   margin: 14px;
@@ -385,23 +422,21 @@ button {
   color: var(--muted);
 
   overflow: auto;
+
   line-height: 1.5;
 }
 
 
 /* =========================================
-   INPUT AREA
+   INPUT
 ========================================= */
 
 .input-area {
-  flex-shrink: 0;
-
   width: 100%;
 
-  padding:
-    15px
-    20px
-    calc(20px + var(--safe-bottom));
+  flex-shrink: 0;
+
+  padding: 15px 20px 20px;
 
   border-top: 1px solid var(--border);
 
@@ -410,6 +445,7 @@ button {
 
 .input-box {
   width: 100%;
+
   max-width: 950px;
 
   margin: auto;
@@ -417,12 +453,14 @@ button {
   min-height: 58px;
 
   border: 1px solid var(--border);
+
   background: var(--panel);
 
   border-radius: 16px;
 
   display: flex;
   align-items: center;
+
   gap: 8px;
 
   padding: 8px;
@@ -435,12 +473,14 @@ button {
 
 #messageInput {
   width: 100%;
+
   min-width: 0;
 
   border: none;
   outline: none;
 
   background: transparent;
+
   color: var(--text);
 
   padding: 10px;
@@ -460,6 +500,7 @@ button {
   min-width: 42px;
 
   border: none;
+
   border-radius: 11px;
 
   display: grid;
@@ -468,7 +509,9 @@ button {
 
 .attach {
   background: transparent;
+
   color: var(--muted);
+
   font-size: 18px;
 }
 
@@ -479,6 +522,7 @@ button {
 
 .send {
   background: var(--accent);
+
   color: white;
 
   font-size: 20px;
@@ -498,16 +542,19 @@ button {
   display: none;
 
   padding: 7px 10px;
+
   margin-bottom: 4px;
 
   border-radius: 8px;
 
   background: #202735;
+
   color: #b9c2d3;
 
   font-size: 12px;
 
   max-height: 100px;
+
   overflow: auto;
 }
 
@@ -522,18 +569,17 @@ button {
 
 .modal {
   position: fixed;
+
   inset: 0;
 
-  z-index: 100;
+  z-index: 500;
 
   display: none;
+
   align-items: center;
   justify-content: center;
 
-  padding:
-    20px
-    20px
-    calc(20px + var(--safe-bottom));
+  padding: 20px;
 
   background: rgba(0, 0, 0, 0.65);
 }
@@ -544,14 +590,18 @@ button {
 
 .modal-box {
   width: min(100%, 450px);
+
+  max-height: 90vh;
   max-height: 90dvh;
 
   overflow-y: auto;
 
   background: #141822;
+
   border: 1px solid var(--border);
 
   border-radius: 16px;
+
   padding: 22px;
 }
 
@@ -567,6 +617,7 @@ button {
   display: block;
 
   color: var(--muted);
+
   font-size: 13px;
 
   margin: 15px 0 7px;
@@ -577,12 +628,15 @@ button {
   width: 100%;
 
   border: 1px solid var(--border);
+
   border-radius: 9px;
 
   background: #0d1017;
+
   color: var(--text);
 
   outline: none;
+
   padding: 12px;
 }
 
@@ -593,7 +647,9 @@ button {
 
 .modal-actions {
   display: flex;
+
   justify-content: flex-end;
+
   gap: 10px;
 
   margin-top: 18px;
@@ -602,11 +658,13 @@ button {
 .modal-actions button,
 .save-provider {
   border: none;
+
   border-radius: 9px;
 
   padding: 11px 16px;
 
   color: white;
+
   background: #252b38;
 }
 
@@ -626,6 +684,7 @@ button {
 
 .settings-header {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
 }
@@ -636,8 +695,11 @@ button {
 
 #closeSettingsButton {
   border: none;
+
   background: transparent;
+
   color: var(--muted);
+
   font-size: 28px;
 }
 
@@ -647,20 +709,27 @@ button {
 
 .settings-note {
   color: var(--muted);
+
   line-height: 1.6;
+
   font-size: 13px;
 }
 
 .settings-status {
   min-height: 20px;
+
   margin-top: 10px;
+
   color: #8bd7a3;
+
   font-size: 13px;
 }
 
 .settings-box hr {
   border: none;
+
   border-top: 1px solid var(--border);
+
   margin: 22px 0;
 }
 
@@ -679,6 +748,7 @@ button {
 
 ::-webkit-scrollbar-thumb {
   background: #343b4a;
+
   border-radius: 20px;
 }
 
@@ -703,36 +773,38 @@ button {
 
 @media (max-width: 800px) {
 
-  html,
-  body {
-    height: 100dvh;
-  }
-
-  body {
-    overflow: hidden;
-  }
-
   .app {
     height: 100dvh;
-    min-height: 100dvh;
   }
 
+  /* Main screen full width */
+  .main {
+    width: 100%;
+  }
+
+  /* Sidebar hidden by default */
   .sidebar {
     position: fixed;
 
-    z-index: 200;
-
     top: 0;
     left: 0;
+    bottom: 0;
+
+    z-index: 1000;
+
+    width: min(300px, 85vw);
+    min-width: min(300px, 85vw);
 
     height: 100dvh;
 
-    transform: translateX(-105%);
+    transform: translateX(-100%);
+
     transition: transform 0.25s ease;
 
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.45);
   }
 
+  /* Sidebar visible only when app.js adds .open */
   .sidebar.open {
     transform: translateX(0);
   }
@@ -745,28 +817,12 @@ button {
     display: none;
   }
 
-  .main {
-    height: 100%;
-    min-height: 0;
-  }
-
-  .content {
-    min-height: 0;
-  }
-
   .chat {
     padding: 20px 14px;
   }
 
   .input-area {
-    padding:
-      10px
-      10px
-      calc(18px + var(--safe-bottom));
-  }
-
-  .input-box {
-    min-height: 60px;
+    padding: 10px 10px 16px;
   }
 
   .topbar {
@@ -803,10 +859,7 @@ button {
   }
 
   .modal {
-    padding:
-      10px
-      10px
-      calc(10px + var(--safe-bottom));
+    padding: 10px;
   }
 
   .modal-box {
@@ -814,10 +867,7 @@ button {
   }
 
   .input-area {
-    padding:
-      8px
-      8px
-      calc(14px + var(--safe-bottom));
+    padding: 8px 8px 14px;
   }
 
 }
