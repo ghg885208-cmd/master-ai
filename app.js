@@ -1,1273 +1,2310 @@
 /* =========================================
-   MASTER AI — MAIN APPLICATION
+   MASTER AI — COMPLETE APP
 ========================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+"use strict";
 
-  /* =======================================
-     ELEMENTS
-  ======================================= */
+/* =========================================
+   CONFIG
+========================================= */
+
+const DEFAULT_CONFIG = {
+  activeProvider: "deepseek",
+
+  providers: {
+    deepseek: {
+      name: "DeepSeek",
+      enabled: true,
+      apiUrl: "https://api.deepseek.com/chat/completions",
+      model: "deepseek-v4-flash",
+      apiKey: ""
+    },
+
+    openai: {
+      name: "OpenAI",
+      enabled: false,
+      apiUrl: "",
+      model: "",
+      apiKey: ""
+    },
+
+    gemini: {
+      name: "Google Gemini",
+      enabled: false,
+      apiUrl: "",
+      model: "",
+      apiKey: ""
+    },
+
+    custom: {
+      name: "Custom API",
+      enabled: false,
+      apiUrl: "",
+      model: "",
+      apiKey: ""
+    }
+  }
+};
+
+const STORAGE_KEYS = {
+  config: "master_ai_config",
+  chats: "master_ai_chats",
+  currentChat: "master_ai_current_chat"
+};
+
+
+/* =========================================
+   SYSTEM INSTRUCTIONS
+========================================= */
+
+const MASTER_SYSTEM_PROMPT = `
+You are MASTER AI.
+
+Your job is to help the user accurately and clearly.
+
+CORE BEHAVIOR:
+- Understand the user's real goal before answering.
+- Analyse the problem carefully.
+- Consider alternatives when useful.
+- Point out weak assumptions and risks.
+- Give a direct, clear final answer.
+- Do not pretend to have capabilities you do not actually have.
+- If information is uncertain, say so.
+
+MASTERMIND ANALYSIS:
+When the user is making a decision:
+1. Understand the goal.
+2. Analyse Option A.
+3. Analyse Option B and other alternatives.
+4. Consider possible consequences.
+5. Consider short-term and long-term effects.
+6. Identify risks and missing information.
+7. Recommend the strongest option with reasons.
+
+ALL MODES WORK TOGETHER:
+- conversation
+- problem solving
+- planning
+- analysis
+- creative thinking
+- coding support
+- attachment analysis
+- future planning
+- mastermind reasoning
+
+Respond naturally. Do not unnecessarily mention internal modes.
+
+The user may communicate in Hindi, Hinglish or English.
+Match the user's language when possible.
+`;
+
+
+/* =========================================
+   STATE
+========================================= */
+
+let config = loadConfig();
+
+let chats = loadChats();
+
+let currentChatId =
+  localStorage.getItem(STORAGE_KEYS.currentChat) ||
+  null;
+
+let selectedFiles = [];
+
+let isSending = false;
+
+let recognition = null;
+
+let isListening = false;
+
+let liveActive = false;
+
+
+/* =========================================
+   DOM HELPER
+========================================= */
+
+const $ = (selector) => document.querySelector(selector);
+
+const getElement = (...selectors) => {
+  for (const selector of selectors) {
+    const element = document.querySelector(selector);
+
+    if (element) return element;
+  }
+
+  return null;
+};
+
+
+/* =========================================
+   DOM ELEMENTS
+========================================= */
+
+const elements = {
+
+  sidebar:
+    getElement(".sidebar"),
+
+  sidebarOverlay:
+    getElement(".sidebar-overlay"),
+
+  menuButton:
+    getElement(
+      "#menuButton",
+      ".menu-button"
+    ),
+
+  chat:
+    getElement(
+      "#chat",
+      ".chat"
+    ),
+
+  messageInput:
+    getElement(
+      "#messageInput",
+      "textarea[name='message']"
+    ),
+
+  sendButton:
+    getElement(
+      "#sendButton",
+      ".send"
+    ),
+
+  attachButton:
+    getElement(
+      "#attachButton",
+      ".attach"
+    ),
+
+  fileInput:
+    getElement(
+      "#fileInput",
+      "input[type='file']"
+    ),
+
+  attachmentName:
+    getElement(
+      "#attachmentName",
+      ".attachment-name"
+    ),
+
+  newChatButton:
+    getElement(
+      "#newChatButton",
+      ".new-chat"
+    ),
+
+  historyList:
+    getElement(
+      "#historyList",
+      ".history-list"
+    ),
+
+  projectList:
+    getElement(
+      "#projectList",
+      ".project-list"
+    ),
+
+  createProjectButton:
+    getElement(
+      "#createProjectButton",
+      ".create-project"
+    ),
+
+  settingsButton:
+    getElement(
+      "#settingsButton",
+      ".settings-button"
+    ),
+
+  settingsModal:
+    getElement(
+      "#settingsModal"
+    ),
+
+  closeSettingsButton:
+    getElement(
+      "#closeSettingsButton"
+    ),
+
+  providerSelect:
+    getElement(
+      "#providerSelect"
+    ),
+
+  apiKeyInput:
+    getElement(
+      "#apiKeyInput"
+    ),
+
+  apiUrlInput:
+    getElement(
+      "#apiUrlInput"
+    ),
+
+  modelInput:
+    getElement(
+      "#modelInput"
+    ),
+
+  saveProviderButton:
+    getElement(
+      "#saveProviderButton",
+      ".save-provider"
+    ),
+
+  settingsStatus:
+    getElement(
+      "#settingsStatus",
+      ".settings-status"
+    ),
+
+  preview:
+    getElement(
+      "#preview",
+      ".preview"
+    ),
+
+  previewClear:
+    getElement(
+      "#previewClear",
+      ".canvas-clear"
+    ),
+
+  micButton:
+    getElement(
+      "#micButton",
+      ".mic-button"
+    ),
+
+  liveButton:
+    getElement(
+      "#liveButton",
+      "#masterLiveButton"
+    ),
+
+  liveModal:
+    getElement(
+      "#liveModal"
+    ),
+
+  liveClose:
+    getElement(
+      "#liveClose"
+    ),
+
+  liveOrb:
+    getElement(
+      "#liveOrb",
+      ".live-orb"
+    ),
+
+  liveStatus:
+    getElement(
+      "#liveStatus",
+      ".live-status"
+    ),
+
+  liveTranscript:
+    getElement(
+      "#liveTranscript",
+      ".live-transcript"
+    ),
+
+  liveStop:
+    getElement(
+      "#liveStop"
+    ),
+
+  status:
+    getElement(
+      ".status",
+      "#status"
+    )
+};
+
+
+/* =========================================
+   STORAGE
+========================================= */
+
+function loadConfig() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        STORAGE_KEYS.config
+      );
+
+    if (!saved) {
+      return structuredClone(
+        DEFAULT_CONFIG
+      );
+    }
+
+    const parsed =
+      JSON.parse(saved);
+
+    return mergeConfig(
+      structuredClone(DEFAULT_CONFIG),
+      parsed
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Could not load config:",
+      error
+    );
+
+    return structuredClone(
+      DEFAULT_CONFIG
+    );
+  }
+}
+
+
+function mergeConfig(
+  base,
+  saved
+) {
+
+  if (!saved) return base;
+
+  return {
+    ...base,
+    ...saved,
+
+    providers: {
+      ...base.providers,
+      ...(saved.providers || {})
+    }
+  };
+}
+
+
+function saveConfig() {
+
+  try {
+
+    localStorage.setItem(
+      STORAGE_KEYS.config,
+      JSON.stringify(config)
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Config save failed:",
+      error
+    );
+  }
+}
+
+
+function loadChats() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        STORAGE_KEYS.chats
+      );
+
+    if (!saved) return [];
+
+    const parsed =
+      JSON.parse(saved);
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+
+  } catch (error) {
+
+    return [];
+  }
+}
+
+
+function saveChats() {
+
+  try {
+
+    localStorage.setItem(
+      STORAGE_KEYS.chats,
+      JSON.stringify(chats)
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Chat save failed:",
+      error
+    );
+  }
+}
+
+
+/* =========================================
+   CHAT MANAGEMENT
+========================================= */
+
+function createChat() {
+
+  const chat = {
+
+    id:
+      "chat_" +
+      Date.now() +
+      "_" +
+      Math.random()
+        .toString(36)
+        .slice(2),
+
+    title: "New Chat",
+
+    createdAt:
+      new Date().toISOString(),
+
+    messages: []
+  };
+
+  chats.unshift(chat);
+
+  currentChatId = chat.id;
+
+  localStorage.setItem(
+    STORAGE_KEYS.currentChat,
+    currentChatId
+  );
+
+  saveChats();
+
+  return chat;
+}
+
+
+function getCurrentChat() {
+
+  let chat =
+    chats.find(
+      item =>
+        item.id === currentChatId
+    );
+
+  if (!chat) {
+
+    chat = createChat();
+  }
+
+  return chat;
+}
+
+
+function setCurrentChat(id) {
 
   const chat =
-    document.getElementById("chat");
-
-  const messageInput =
-    document.getElementById("messageInput");
-
-  const sendButton =
-    document.getElementById("sendButton");
-
-  const newChatButton =
-    document.getElementById("newChatButton");
-
-  const menuButton =
-    document.getElementById("menuButton");
-
-  const sidebar =
-    document.getElementById("sidebar");
-
-  const settingsButton =
-    document.getElementById("settingsButton");
-
-  const settingsModal =
-    document.getElementById("settingsModal");
-
-  const closeSettingsButton =
-    document.getElementById(
-      "closeSettingsButton"
+    chats.find(
+      item => item.id === id
     );
 
-  const providerSelect =
-    document.getElementById("providerSelect");
+  if (!chat) return;
 
-  const providerApiKey =
-    document.getElementById(
-      "providerApiKey"
-    );
+  currentChatId = id;
 
-  const providerEndpoint =
-    document.getElementById(
-      "providerEndpoint"
-    );
+  localStorage.setItem(
+    STORAGE_KEYS.currentChat,
+    currentChatId
+  );
 
-  const providerModel =
-    document.getElementById(
-      "providerModel"
-    );
+  renderChat();
 
-  const saveProviderButton =
-    document.getElementById(
-      "saveProviderButton"
-    );
+  renderHistory();
 
-  const settingsStatus =
-    document.getElementById(
-      "settingsStatus"
-    );
-
-  const attachButton =
-    document.getElementById(
-      "attachButton"
-    );
-
-  const fileInput =
-    document.getElementById(
-      "fileInput"
-    );
-
-  const attachmentName =
-    document.getElementById(
-      "attachmentName"
-    );
-
-  const historyList =
-    document.getElementById(
-      "historyList"
-    );
-
-  const createProjectButton =
-    document.getElementById(
-      "createProjectButton"
-    );
-
-  const projectModal =
-    document.getElementById(
-      "projectModal"
-    );
-
-  const projectNameInput =
-    document.getElementById(
-      "projectNameInput"
-    );
-
-  const cancelProjectButton =
-    document.getElementById(
-      "cancelProjectButton"
-    );
-
-  const confirmProjectButton =
-    document.getElementById(
-      "confirmProjectButton"
-    );
-
-  const projectList =
-    document.getElementById(
-      "projectList"
-    );
+  closeSidebar();
+}
 
 
-  /* =======================================
-     STATE
-  ======================================= */
+/* =========================================
+   HISTORY
+========================================= */
 
-  let selectedFiles = [];
+function renderHistory() {
 
-  let conversation = [];
+  if (!elements.historyList) return;
 
+  elements.historyList.innerHTML = "";
 
-  /* =======================================
-     SYSTEM PROMPT
-  ======================================= */
+  chats.forEach(chat => {
 
-  const MASTER_SYSTEM_PROMPT = `
-You are MASTER, a personal AI workspace.
+    const button =
+      document.createElement("button");
 
-Your capabilities currently include:
-- conversation
-- analysis
-- coding assistance
-- planning
-- creative work
-- project assistance
-- decision analysis
+    button.className =
+      "history-item";
 
-MASTER has a special Mastermind approach.
+    if (
+      chat.id === currentChatId
+    ) {
 
-When the user asks for an important decision,
-analyze:
-
-1. The user's goal
-2. Available options
-3. Advantages
-4. Disadvantages
-5. Risks
-6. Consequences
-7. Alternative possibilities
-8. Short-term effects
-9. Long-term effects
-10. What happens if the user chooses nothing
-11. What information is missing
-12. A practical recommendation
-
-Do not pretend that unavailable modules such as
-full device control, 3D generation, camera access,
-or phone automation are currently active.
-
-Be honest about what is actually possible.
-  `.trim();
-
-
-  /* =======================================
-     WELCOME
-  ======================================= */
-
-  function removeWelcome() {
-
-    const welcome =
-      document.querySelector(".welcome");
-
-    if (welcome) {
-      welcome.remove();
+      button.classList.add(
+        "active"
+      );
     }
 
+    button.textContent =
+      chat.title ||
+      "New Chat";
+
+    button.addEventListener(
+      "click",
+      () => {
+        setCurrentChat(
+          chat.id
+        );
+      }
+    );
+
+    elements.historyList.appendChild(
+      button
+    );
+  });
+}
+
+
+/* =========================================
+   RENDER CHAT
+========================================= */
+
+function renderChat() {
+
+  if (!elements.chat) return;
+
+  const chat =
+    getCurrentChat();
+
+  elements.chat.innerHTML = "";
+
+  if (
+    !chat.messages ||
+    chat.messages.length === 0
+  ) {
+
+    renderWelcome();
+
+    return;
   }
 
+  chat.messages.forEach(
+    message => {
 
-  /* =======================================
-     MESSAGE UI
-  ======================================= */
+      addMessageToDOM(
+        message.role,
+        message.content,
+        message.attachments || []
+      );
+    }
+  );
 
-  function addMessage(
+  scrollChatToBottom();
+}
+
+
+function renderWelcome() {
+
+  if (!elements.chat) return;
+
+  const welcome =
+    document.createElement("div");
+
+  welcome.className =
+    "welcome";
+
+  welcome.innerHTML = `
+    <div class="master-orb small-orb">
+      <div class="orb-ring ring-one"></div>
+      <div class="orb-ring ring-two"></div>
+      <div class="orb-core">M</div>
+    </div>
+
+    <h1>MASTER AI</h1>
+
+    <p>
+      Ask anything. Type normally or use
+      MASTER LIVE for voice conversation.
+    </p>
+
+    <div class="capability-grid">
+
+      <button
+        class="capability-card"
+        data-prompt="Help me analyse a decision with multiple options."
+      >
+        <span>🧠</span>
+        Mastermind Analysis
+      </button>
+
+      <button
+        class="capability-card"
+        data-prompt="Help me plan my project step by step."
+      >
+        <span>📋</span>
+        Planning
+      </button>
+
+      <button
+        class="capability-card"
+        data-prompt="Help me solve a difficult problem."
+      >
+        <span>⚙️</span>
+        Problem Solving
+      </button>
+
+      <button
+        class="capability-card"
+        data-prompt="Help me generate creative ideas."
+      >
+        <span>✨</span>
+        Creative Thinking
+      </button>
+
+    </div>
+  `;
+
+  elements.chat.appendChild(
+    welcome
+  );
+
+  welcome
+    .querySelectorAll(
+      "[data-prompt]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          if (
+            elements.messageInput
+          ) {
+
+            elements.messageInput.value =
+              button.dataset.prompt;
+
+            autoResizeInput();
+
+            elements.messageInput.focus();
+          }
+        }
+      );
+    });
+}
+
+
+/* =========================================
+   MESSAGE DOM
+========================================= */
+
+function addMessageToDOM(
+  role,
+  content,
+  attachments = []
+) {
+
+  if (!elements.chat) return;
+
+  const message =
+    document.createElement("div");
+
+  message.className =
+    `message ${
+      role === "user"
+        ? "user"
+        : "master"
+    }`;
+
+  if (role !== "user") {
+
+    const label =
+      document.createElement("strong");
+
+    label.textContent =
+      "MASTER AI";
+
+    message.appendChild(label);
+
+    message.appendChild(
+      document.createElement("br")
+    );
+  }
+
+  const text =
+    document.createElement("span");
+
+  text.textContent =
+    content || "";
+
+  message.appendChild(text);
+
+  if (
+    attachments &&
+    attachments.length
+  ) {
+
+    attachments.forEach(file => {
+
+      const note =
+        document.createElement("span");
+
+      note.className =
+        "file-note";
+
+      note.textContent =
+        `📎 ${file.name}`;
+
+      message.appendChild(note);
+    });
+  }
+
+  elements.chat.appendChild(
+    message
+  );
+
+  scrollChatToBottom();
+
+  return message;
+}
+
+
+/* =========================================
+   ADD MESSAGE
+========================================= */
+
+function addMessage(
+  role,
+  content,
+  attachments = []
+) {
+
+  const chat =
+    getCurrentChat();
+
+  chat.messages.push({
+
+    role,
+    content,
+
+    attachments:
+      attachments.map(file => ({
+        name: file.name,
+        type: file.type,
+        size: file.size
+      })),
+
+    time:
+      new Date().toISOString()
+  });
+
+  if (
+    role === "user" &&
+    chat.messages.length === 1
+  ) {
+
+    chat.title =
+      content
+        .trim()
+        .slice(0, 40) ||
+      "New Chat";
+  }
+
+  saveChats();
+
+  renderHistory();
+
+  return chat.messages[
+    chat.messages.length - 1
+  ];
+}
+
+
+/* =========================================
+   SEND MESSAGE
+========================================= */
+
+async function sendMessage(
+  forcedText = null
+) {
+
+  if (isSending) return;
+
+  const inputText =
+    forcedText !== null
+      ? forcedText
+      : (
+          elements.messageInput?.value ||
+          ""
+        );
+
+  const text =
+    inputText.trim();
+
+  if (
+    !text &&
+    selectedFiles.length === 0
+  ) {
+
+    return;
+  }
+
+  const files =
+    [...selectedFiles];
+
+  clearWelcomeIfNeeded();
+
+  addMessageToDOM(
+    "user",
     text,
-    sender
+    files
+  );
+
+  addMessage(
+    "user",
+    text,
+    files
+  );
+
+  if (
+    elements.messageInput
   ) {
 
-    removeWelcome();
+    elements.messageInput.value = "";
 
-    const message =
-      document.createElement("div");
+    autoResizeInput();
+  }
 
-    message.className =
-      `message ${sender}`;
+  clearAttachments();
 
-    if (sender === "master") {
+  isSending = true;
 
-      const title =
-        document.createElement("strong");
+  setSendingState(true);
 
-      title.textContent =
-        "MASTER";
+  const loading =
+    addLoadingMessage();
 
-      message.appendChild(title);
+  try {
 
-      message.appendChild(
-        document.createElement("br")
+    const reply =
+      await callAI(
+        text,
+        files
       );
 
-    }
+    loading.remove();
 
-
-    const content =
-      document.createElement("div");
-
-    content.textContent = text;
-
-    message.appendChild(content);
-
-
-    chat.appendChild(message);
-
-    chat.scrollTop =
-      chat.scrollHeight;
-
-
-    return message;
-
-  }
-
-
-  function addLoadingMessage() {
-
-    const message =
-      document.createElement("div");
-
-    message.className =
-      "message master loading-message";
-
-    message.textContent =
-      "MASTER is thinking...";
-
-    chat.appendChild(message);
-
-    chat.scrollTop =
-      chat.scrollHeight;
-
-
-    return message;
-
-  }
-
-
-  /* =======================================
-     SETTINGS
-  ======================================= */
-
-  function openSettings() {
-
-    if (!settingsModal) {
-      return;
-    }
-
-
-    if (
-      typeof window.loadMasterApiConfig ===
-      "function"
-    ) {
-
-      window.loadMasterApiConfig();
-
-    }
-
-
-    loadProviderIntoSettings();
-
-
-    settingsModal.classList.add(
-      "show"
+    addMessageToDOM(
+      "assistant",
+      reply
     );
-
-  }
-
-
-  function closeSettings() {
-
-    if (!settingsModal) {
-      return;
-    }
-
-
-    settingsModal.classList.remove(
-      "show"
-    );
-
-  }
-
-
-  function loadProviderIntoSettings() {
-
-    if (
-      !window.MASTER_API_CONFIG
-    ) {
-      return;
-    }
-
-
-    const config =
-      window.MASTER_API_CONFIG;
-
-
-    const providerId =
-      config.activeProvider;
-
-
-    const provider =
-      config.providers[
-        providerId
-      ];
-
-
-    if (!provider) {
-      return;
-    }
-
-
-    providerSelect.value =
-      providerId;
-
-    providerApiKey.value =
-      provider.apiKey || "";
-
-    providerEndpoint.value =
-      provider.apiUrl || "";
-
-    providerModel.value =
-      provider.model || "";
-
-  }
-
-
-  function saveProviderSettings() {
-
-    if (
-      !window.MASTER_API_CONFIG
-    ) {
-
-      showSettingsStatus(
-        "API configuration file was not loaded."
-      );
-
-      return;
-
-    }
-
-
-    const providerId =
-      providerSelect.value;
-
-
-    if (
-      !window.MASTER_API_CONFIG
-        .providers[providerId]
-    ) {
-
-      showSettingsStatus(
-        "Unknown provider."
-      );
-
-      return;
-
-    }
-
-
-    if (
-      typeof window.setActiveProvider ===
-      "function"
-    ) {
-
-      window.setActiveProvider(
-        providerId
-      );
-
-    }
-
-
-    if (
-      typeof window.updateProvider ===
-      "function"
-    ) {
-
-      window.updateProvider(
-        providerId,
-        {
-
-          apiKey:
-            providerApiKey.value.trim(),
-
-          apiUrl:
-            providerEndpoint.value.trim(),
-
-          model:
-            providerModel.value.trim()
-
-        }
-      );
-
-    }
-
-
-    if (
-      typeof window.saveMasterApiConfig ===
-      "function"
-    ) {
-
-      window.saveMasterApiConfig();
-
-    }
-
-
-    showSettingsStatus(
-      "Provider saved successfully."
-    );
-
-  }
-
-
-  function showSettingsStatus(
-    text
-  ) {
-
-    if (!settingsStatus) {
-      return;
-    }
-
-
-    settingsStatus.textContent =
-      text;
-
-
-    setTimeout(() => {
-
-      if (
-        settingsStatus.textContent === text
-      ) {
-
-        settingsStatus.textContent =
-          "";
-
-      }
-
-    }, 3000);
-
-  }
-
-
-  /* =======================================
-     PROVIDER CHANGE
-  ======================================= */
-
-  function changeProvider() {
-
-    const providerId =
-      providerSelect.value;
-
-
-    if (
-      !window.MASTER_API_CONFIG
-    ) {
-      return;
-    }
-
-
-    const provider =
-      window.MASTER_API_CONFIG
-        .providers[
-          providerId
-        ];
-
-
-    if (!provider) {
-      return;
-    }
-
-
-    providerApiKey.value =
-      provider.apiKey || "";
-
-    providerEndpoint.value =
-      provider.apiUrl || "";
-
-    providerModel.value =
-      provider.model || "";
-
-
-    if (
-      providerId === "deepseek" &&
-      !providerEndpoint.value
-    ) {
-
-      providerEndpoint.value =
-        "https://api.deepseek.com/chat/completions";
-
-    }
-
-
-    if (
-      providerId === "deepseek" &&
-      !providerModel.value
-    ) {
-
-      providerModel.value =
-        "deepseek-v4-flash";
-
-    }
-
-  }
-
-
-  /* =======================================
-     API CALL
-  ======================================= */
-
-  async function askAI(
-    userMessage
-  ) {
-
-    if (
-      !window.MASTER_API_CONFIG
-    ) {
-
-      throw new Error(
-        "api-config.js was not loaded."
-      );
-
-    }
-
-
-    const provider =
-      window.getActiveProvider
-        ? window.getActiveProvider()
-        : window.MASTER_API_CONFIG
-            .providers[
-              window.MASTER_API_CONFIG
-                .activeProvider
-            ];
-
-
-    if (!provider) {
-
-      throw new Error(
-        "No active AI provider."
-      );
-
-    }
-
-
-    if (!provider.apiKey) {
-
-      throw new Error(
-        "No API key saved. Open Settings and add your API key."
-      );
-
-    }
-
-
-    if (!provider.apiUrl) {
-
-      throw new Error(
-        "No API endpoint saved."
-      );
-
-    }
-
-
-    if (!provider.model) {
-
-      throw new Error(
-        "No AI model selected."
-      );
-
-    }
-
-
-    const messages = [
-
-      {
-        role: "system",
-
-        content:
-          MASTER_SYSTEM_PROMPT
-      },
-
-
-      ...conversation,
-
-      {
-        role: "user",
-
-        content:
-          userMessage
-      }
-
-    ];
-
-
-    const response =
-      await fetch(
-        provider.apiUrl,
-        {
-
-          method: "POST",
-
-          headers: {
-
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              `Bearer ${provider.apiKey}`
-
-          },
-
-
-          body:
-            JSON.stringify({
-
-              model:
-                provider.model,
-
-              messages:
-                messages,
-
-              temperature:
-                0.7,
-
-              stream:
-                false
-
-            })
-
-        }
-      );
-
-
-    if (!response.ok) {
-
-      let errorText =
-        `API error: ${response.status}`;
-
-
-      try {
-
-        const errorData =
-          await response.json();
-
-
-        errorText =
-          errorData?.error?.message ||
-          errorText;
-
-      } catch (error) {
-
-        /* Ignore JSON parse error */
-
-      }
-
-
-      throw new Error(
-        errorText
-      );
-
-    }
-
-
-    const data =
-      await response.json();
-
-
-    const answer =
-      data?.choices?.[0]
-        ?.message?.content;
-
-
-    if (!answer) {
-
-      throw new Error(
-        "The AI returned an empty response."
-      );
-
-    }
-
-
-    return answer;
-
-  }
-
-
-  /* =======================================
-     SEND MESSAGE
-  ======================================= */
-
-  async function sendMessage() {
-
-    const text =
-      messageInput.value.trim();
-
-
-    if (!text) {
-      return;
-    }
-
 
     addMessage(
-      text,
-      "user"
+      "assistant",
+      reply
     );
 
+    if (liveActive) {
 
-    conversation.push({
+      speakText(reply);
+    }
 
+  } catch (error) {
+
+    console.error(error);
+
+    loading.remove();
+
+    const errorText =
+      getReadableError(
+        error
+      );
+
+    addMessageToDOM(
+      "assistant",
+      errorText
+    );
+
+  } finally {
+
+    isSending = false;
+
+    setSendingState(false);
+
+    scrollChatToBottom();
+  }
+}
+
+
+/* =========================================
+   AI API
+========================================= */
+
+async function callAI(
+  userText,
+  files
+) {
+
+  const provider =
+    config.providers[
+      config.activeProvider
+    ];
+
+  if (!provider) {
+
+    throw new Error(
+      "No API provider selected."
+    );
+  }
+
+  if (
+    !provider.apiKey ||
+    !provider.apiKey.trim()
+  ) {
+
+    throw new Error(
+      "API key not configured. Open Settings and add your API key."
+    );
+  }
+
+  if (
+    !provider.apiUrl ||
+    !provider.model
+  ) {
+
+    throw new Error(
+      "API URL or model is missing."
+    );
+  }
+
+  const chat =
+    getCurrentChat();
+
+  const history =
+    chat.messages
+      .slice(-20)
+      .map(message => ({
+
+        role:
+          message.role === "assistant"
+            ? "assistant"
+            : "user",
+
+        content:
+          message.content
+      }));
+
+  const attachmentInfo =
+    files.length
+      ? "\n\nAttached files:\n" +
+        files
+          .map(file =>
+            `- ${file.name} (${file.type || "unknown"})`
+          )
+          .join("\n")
+      : "";
+
+  const messages = [
+
+    {
+      role: "system",
+      content:
+        MASTER_SYSTEM_PROMPT
+    },
+
+    ...history.slice(0, -1),
+
+    {
       role: "user",
+      content:
+        userText +
+        attachmentInfo
+    }
+  ];
 
-      content: text
+  const requestBody = {
 
-    });
+    model:
+      provider.model,
+
+    messages,
+
+    stream: false
+  };
 
 
-    saveHistoryItem(
+  /*
+    DeepSeek thinking support.
+    If another provider is selected,
+    this field is not automatically added.
+  */
+
+  if (
+    config.activeProvider ===
+    "deepseek"
+  ) {
+
+    requestBody.thinking = {
+      type: "enabled"
+    };
+
+    requestBody.reasoning_effort =
+      "high";
+  }
+
+
+  const response =
+    await fetch(
+      provider.apiUrl,
+      {
+
+        method: "POST",
+
+        headers: {
+
+          "Content-Type":
+            "application/json",
+
+          "Authorization":
+            `Bearer ${provider.apiKey}`
+        },
+
+        body:
+          JSON.stringify(
+            requestBody
+          )
+      }
+    );
+
+  if (!response.ok) {
+
+    const errorText =
+      await response.text();
+
+    throw new Error(
+      `API Error ${response.status}: ${errorText}`
+    );
+  }
+
+  const data =
+    await response.json();
+
+  const answer =
+    data?.choices?.[0]
+      ?.message?.content;
+
+  if (!answer) {
+
+    throw new Error(
+      "The AI returned an empty response."
+    );
+  }
+
+  return answer;
+}
+
+
+/* =========================================
+   LOADING MESSAGE
+========================================= */
+
+function addLoadingMessage() {
+
+  if (!elements.chat) {
+
+    return {
+      remove() {}
+    };
+  }
+
+  const message =
+    document.createElement("div");
+
+  message.className =
+    "message master loading-message";
+
+  message.textContent =
+    "MASTER AI is analysing...";
+
+  elements.chat.appendChild(
+    message
+  );
+
+  scrollChatToBottom();
+
+  return message;
+}
+
+
+/* =========================================
+   ERROR TEXT
+========================================= */
+
+function getReadableError(
+  error
+) {
+
+  const message =
+    error?.message || "";
+
+  if (
+    message.includes(
+      "API key"
+    )
+  ) {
+
+    return (
+      "API key missing or invalid. " +
+      "Open Settings and check the provider configuration."
+    );
+  }
+
+  if (
+    message.includes(
+      "Failed to fetch"
+    )
+  ) {
+
+    return (
+      "Connection failed. Check your internet connection, API URL, and whether the API allows browser requests."
+    );
+  }
+
+  return (
+    "Something went wrong:\n" +
+    message
+  );
+}
+
+
+/* =========================================
+   SEND STATE
+========================================= */
+
+function setSendingState(
+  sending
+) {
+
+  if (
+    elements.sendButton
+  ) {
+
+    elements.sendButton.disabled =
+      sending;
+  }
+
+  if (
+    elements.messageInput
+  ) {
+
+    elements.messageInput.disabled =
+      sending;
+  }
+
+  if (
+    elements.status
+  ) {
+
+    elements.status.textContent =
+      sending
+        ? "Thinking..."
+        : "Ready";
+  }
+}
+
+
+/* =========================================
+   INPUT
+========================================= */
+
+function autoResizeInput() {
+
+  const input =
+    elements.messageInput;
+
+  if (!input) return;
+
+  input.style.height = "auto";
+
+  input.style.height =
+    Math.min(
+      input.scrollHeight,
+      150
+    ) + "px";
+}
+
+
+/* =========================================
+   ATTACHMENTS
+========================================= */
+
+function handleFiles(
+  fileList
+) {
+
+  if (!fileList) return;
+
+  const incoming =
+    Array.from(fileList);
+
+  const existingKeys =
+    new Set(
+      selectedFiles.map(
+        file =>
+          `${file.name}_${file.size}_${file.lastModified}`
+      )
+    );
+
+  incoming.forEach(file => {
+
+    const key =
+      `${file.name}_${file.size}_${file.lastModified}`;
+
+    if (
+      !existingKeys.has(key)
+    ) {
+
+      selectedFiles.push(file);
+
+      existingKeys.add(key);
+    }
+  });
+
+  renderAttachments();
+}
+
+
+function renderAttachments() {
+
+  if (
+    !elements.attachmentName
+  ) return;
+
+  if (
+    selectedFiles.length === 0
+  ) {
+
+    elements.attachmentName.textContent =
+      "";
+
+    elements.attachmentName.classList.remove(
+      "show"
+    );
+
+    return;
+  }
+
+  elements.attachmentName.textContent =
+    selectedFiles
+      .map(
+        (file, index) =>
+          `${index + 1}. ${file.name}`
+      )
+      .join("\n");
+
+  elements.attachmentName.classList.add(
+    "show"
+  );
+}
+
+
+function clearAttachments() {
+
+  selectedFiles = [];
+
+  if (
+    elements.fileInput
+  ) {
+
+    elements.fileInput.value = "";
+  }
+
+  renderAttachments();
+}
+
+
+/* =========================================
+   SIDEBAR
+========================================= */
+
+function openSidebar() {
+
+  elements.sidebar?.classList.add(
+    "open"
+  );
+
+  elements.sidebarOverlay?.classList.add(
+    "show"
+  );
+}
+
+
+function closeSidebar() {
+
+  elements.sidebar?.classList.remove(
+    "open"
+  );
+
+  elements.sidebarOverlay?.classList.remove(
+    "show"
+  );
+}
+
+
+/* =========================================
+   SETTINGS
+========================================= */
+
+function openSettings() {
+
+  if (!elements.settingsModal)
+    return;
+
+  fillSettingsForm();
+
+  elements.settingsModal.classList.add(
+    "show"
+  );
+}
+
+
+function closeSettings() {
+
+  elements.settingsModal?.classList.remove(
+    "show"
+  );
+}
+
+
+function fillSettingsForm() {
+
+  const provider =
+    config.providers[
+      config.activeProvider
+    ];
+
+  if (
+    elements.providerSelect
+  ) {
+
+    elements.providerSelect.value =
+      config.activeProvider;
+  }
+
+  if (
+    elements.apiKeyInput
+  ) {
+
+    elements.apiKeyInput.value =
+      provider?.apiKey || "";
+  }
+
+  if (
+    elements.apiUrlInput
+  ) {
+
+    elements.apiUrlInput.value =
+      provider?.apiUrl || "";
+  }
+
+  if (
+    elements.modelInput
+  ) {
+
+    elements.modelInput.value =
+      provider?.model || "";
+  }
+}
+
+
+function saveSettings() {
+
+  const providerName =
+    elements.providerSelect?.value ||
+    config.activeProvider;
+
+  if (
+    !config.providers[
+      providerName
+    ]
+  ) {
+
+    config.providers[
+      providerName
+    ] = {
+
+      name:
+        providerName,
+
+      enabled: true,
+
+      apiUrl: "",
+
+      model: "",
+
+      apiKey: ""
+    };
+  }
+
+  config.activeProvider =
+    providerName;
+
+  const provider =
+    config.providers[
+      providerName
+    ];
+
+  if (
+    elements.apiKeyInput
+  ) {
+
+    provider.apiKey =
+      elements.apiKeyInput.value.trim();
+  }
+
+  if (
+    elements.apiUrlInput
+  ) {
+
+    provider.apiUrl =
+      elements.apiUrlInput.value.trim();
+  }
+
+  if (
+    elements.modelInput
+  ) {
+
+    provider.model =
+      elements.modelInput.value.trim();
+  }
+
+  provider.enabled = true;
+
+  saveConfig();
+
+  if (
+    elements.settingsStatus
+  ) {
+
+    elements.settingsStatus.textContent =
+      "Settings saved.";
+  }
+
+  setTimeout(() => {
+
+    if (
+      elements.settingsStatus
+    ) {
+
+      elements.settingsStatus.textContent =
+        "";
+    }
+
+  }, 2500);
+}
+
+
+/* =========================================
+   PROVIDER CHANGE
+========================================= */
+
+function updateProviderForm() {
+
+  const name =
+    elements.providerSelect?.value;
+
+  if (!name) return;
+
+  if (
+    !config.providers[name]
+  ) {
+
+    config.providers[name] = {
+
+      name,
+
+      enabled: true,
+
+      apiUrl: "",
+
+      model: "",
+
+      apiKey: ""
+    };
+  }
+
+  const provider =
+    config.providers[name];
+
+  if (
+    elements.apiKeyInput
+  ) {
+
+    elements.apiKeyInput.value =
+      provider.apiKey || "";
+  }
+
+  if (
+    elements.apiUrlInput
+  ) {
+
+    elements.apiUrlInput.value =
+      provider.apiUrl || "";
+  }
+
+  if (
+    elements.modelInput
+  ) {
+
+    elements.modelInput.value =
+      provider.model || "";
+  }
+}
+
+
+/* =========================================
+   PREVIEW
+========================================= */
+
+function clearPreview() {
+
+  if (!elements.preview)
+    return;
+
+  elements.preview.innerHTML = `
+    <div class="preview-empty">
+      <div class="preview-icon">◈</div>
+      <strong>Preview</strong>
+      <p>
+        Generated previews will appear here.
+      </p>
+    </div>
+  `;
+}
+
+
+/* =========================================
+   MASTER LIVE
+========================================= */
+
+function openLive() {
+
+  if (!elements.liveModal) {
+
+    alert(
+      "MASTER LIVE HTML elements are missing."
+    );
+
+    return;
+  }
+
+  liveActive = true;
+
+  elements.liveModal.classList.add(
+    "show"
+  );
+
+  setLiveStatus(
+    "Tap the circle and start speaking."
+  );
+}
+
+
+function closeLive() {
+
+  liveActive = false;
+
+  stopListening();
+
+  stopSpeaking();
+
+  elements.liveModal?.classList.remove(
+    "show"
+  );
+
+  elements.liveOrb?.classList.remove(
+    "listening",
+    "thinking",
+    "speaking"
+  );
+
+  setLiveStatus(
+    "MASTER LIVE stopped."
+  );
+}
+
+
+function setLiveStatus(text) {
+
+  if (
+    elements.liveStatus
+  ) {
+
+    elements.liveStatus.textContent =
+      text;
+  }
+}
+
+
+function updateLiveTranscript(
+  text
+) {
+
+  if (
+    elements.liveTranscript
+  ) {
+
+    elements.liveTranscript.textContent =
+      text;
+  }
+}
+
+
+/* =========================================
+   SPEECH RECOGNITION
+========================================= */
+
+function setupSpeechRecognition() {
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+
+    console.warn(
+      "Speech recognition is not supported."
+    );
+
+    return;
+  }
+
+  recognition =
+    new SpeechRecognition();
+
+  recognition.continuous =
+    false;
+
+  recognition.interimResults =
+    true;
+
+  recognition.lang =
+    navigator.language ||
+    "en-IN";
+
+
+  recognition.onstart = () => {
+
+    isListening = true;
+
+    elements.liveOrb?.classList.add(
+      "listening"
+    );
+
+    setLiveStatus(
+      "Listening..."
+    );
+  };
+
+
+  recognition.onresult =
+    event => {
+
+      let finalText = "";
+
+      let interimText = "";
+
+      for (
+        let i =
+          event.resultIndex;
+        i <
+          event.results.length;
+        i++
+      ) {
+
+        const result =
+          event.results[i];
+
+        if (
+          result.isFinal
+        ) {
+
+          finalText +=
+            result[0].transcript;
+
+        } else {
+
+          interimText +=
+            result[0].transcript;
+        }
+      }
+
+      updateLiveTranscript(
+        finalText ||
+        interimText
+      );
+
+      if (
+        finalText.trim()
+      ) {
+
+        if (
+          elements.messageInput
+        ) {
+
+          elements.messageInput.value =
+            finalText.trim();
+
+          autoResizeInput();
+        }
+
+        elements.liveOrb?.classList.remove(
+          "listening"
+        );
+
+        elements.liveOrb?.classList.add(
+          "thinking"
+        );
+
+        setLiveStatus(
+          "MASTER AI is analysing..."
+        );
+
+        sendMessage(
+          finalText.trim()
+        );
+      }
+    };
+
+
+  recognition.onerror =
+    event => {
+
+      console.warn(
+        "Speech recognition error:",
+        event.error
+      );
+
+      isListening = false;
+
+      elements.liveOrb?.classList.remove(
+        "listening"
+      );
+
+      setLiveStatus(
+        "Voice error: " +
+        event.error
+      );
+    };
+
+
+  recognition.onend = () => {
+
+    isListening = false;
+
+    elements.liveOrb?.classList.remove(
+      "listening"
+    );
+  };
+}
+
+
+function startListening() {
+
+  if (!recognition) {
+
+    alert(
+      "Speech recognition is not supported in this browser."
+    );
+
+    return;
+  }
+
+  if (isListening) {
+
+    stopListening();
+
+    return;
+  }
+
+  try {
+
+    recognition.start();
+
+  } catch (error) {
+
+    console.warn(error);
+  }
+}
+
+
+function stopListening() {
+
+  if (!recognition) return;
+
+  try {
+
+    recognition.stop();
+
+  } catch (error) {
+
+    /* ignore */
+  }
+
+  isListening = false;
+
+  elements.liveOrb?.classList.remove(
+    "listening"
+  );
+}
+
+
+/* =========================================
+   TEXT TO SPEECH
+========================================= */
+
+function speakText(
+  text
+) {
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+
+    return;
+  }
+
+  stopSpeaking();
+
+  const utterance =
+    new SpeechSynthesisUtterance(
       text
     );
 
+  utterance.lang =
+    navigator.language ||
+    "en-IN";
 
-    messageInput.value =
-      "";
+  utterance.rate = 1;
 
+  utterance.onstart = () => {
 
-    const loading =
-      addLoadingMessage();
-
-
-    sendButton.disabled =
-      true;
-
-
-    try {
-
-      const answer =
-        await askAI(
-          text
-        );
-
-
-      loading.remove();
-
-
-      addMessage(
-        answer,
-        "master"
-      );
-
-
-      conversation.push({
-
-        role: "assistant",
-
-        content: answer
-
-      });
-
-
-    } catch (error) {
-
-      loading.remove();
-
-
-      addMessage(
-
-        `Error: ${error.message}`,
-
-        "master"
-
-      );
-
-    } finally {
-
-      sendButton.disabled =
-        false;
-
-      messageInput.focus();
-
-    }
-
-  }
-
-
-  /* =======================================
-     NEW CHAT
-  ======================================= */
-
-  function newChat() {
-
-    conversation = [];
-
-
-    selectedFiles = [];
-
-
-    chat.innerHTML = `
-
-      <div class="welcome">
-
-        <h1>
-          New conversation
-        </h1>
-
-        <p>
-          What would you like to work on?
-        </p>
-
-      </div>
-
-    `;
-
-
-    updateAttachmentDisplay();
-
-
-    messageInput.value =
-      "";
-
-
-    messageInput.focus();
-
-  }
-
-
-  /* =======================================
-     FILE ATTACHMENTS
-  ======================================= */
-
-  function updateAttachmentDisplay() {
-
-    if (!attachmentName) {
-      return;
-    }
-
-
-    if (
-      selectedFiles.length === 0
-    ) {
-
-      attachmentName.textContent =
-        "";
-
-      attachmentName.classList.remove(
-        "show"
-      );
-
-      return;
-
-    }
-
-
-    const names =
-      selectedFiles
-        .map(
-          file => file.name
-        )
-        .join(", ");
-
-
-    attachmentName.textContent =
-      `${selectedFiles.length} file(s): ${names}`;
-
-
-    attachmentName.classList.add(
-      "show"
+    elements.liveOrb?.classList.remove(
+      "thinking"
     );
 
-  }
+    elements.liveOrb?.classList.add(
+      "speaking"
+    );
+
+    setLiveStatus(
+      "MASTER AI is speaking..."
+    );
+  };
 
 
-  function handleFiles(
-    files
+  utterance.onend = () => {
+
+    elements.liveOrb?.classList.remove(
+      "speaking"
+    );
+
+    setLiveStatus(
+      "Tap the circle to speak again."
+    );
+  };
+
+
+  speechSynthesis.speak(
+    utterance
+  );
+}
+
+
+function stopSpeaking() {
+
+  if (
+    "speechSynthesis" in window
   ) {
 
-    const newFiles =
-      Array.from(files);
-
-
-    selectedFiles = [
-
-      ...selectedFiles,
-
-      ...newFiles
-
-    ];
-
-
-    updateAttachmentDisplay();
-
+    speechSynthesis.cancel();
   }
 
-
-  /* =======================================
-     HISTORY
-  ======================================= */
-
-  function saveHistoryItem(
-    text
-  ) {
-
-    if (!historyList) {
-      return;
-    }
+  elements.liveOrb?.classList.remove(
+    "speaking"
+  );
+}
 
 
-    const item =
-      document.createElement(
-        "button"
-      );
+/* =========================================
+   WELCOME CLEANUP
+========================================= */
 
+function clearWelcomeIfNeeded() {
 
-    item.type =
-      "button";
-
-
-    item.className =
-      "history-item";
-
-
-    item.textContent =
-      text.length > 45
-        ? `${text.slice(0, 45)}...`
-        : text;
-
-
-    item.addEventListener(
-      "click",
-      () => {
-
-        messageInput.value =
-          text;
-
-        messageInput.focus();
-
-      }
+  const welcome =
+    elements.chat?.querySelector(
+      ".welcome"
     );
 
+  if (welcome) {
 
-    historyList.prepend(
-      item
-    );
-
+    welcome.remove();
   }
+}
 
 
-  /* =======================================
-     PROJECTS
-  ======================================= */
+/* =========================================
+   SCROLL
+========================================= */
 
-  function openProjectModal() {
+function scrollChatToBottom() {
 
-    if (!projectModal) {
-      return;
-    }
+  if (!elements.chat) return;
 
+  requestAnimationFrame(() => {
 
-    projectModal.classList.add(
-      "show"
-    );
-
-
-    projectNameInput.focus();
-
-  }
+    elements.chat.scrollTop =
+      elements.chat.scrollHeight;
+  });
+}
 
 
-  function closeProjectModal() {
+/* =========================================
+   NEW CHAT
+========================================= */
 
-    if (!projectModal) {
-      return;
-    }
+function startNewChat() {
 
+  createChat();
 
-    projectModal.classList.remove(
-      "show"
-    );
+  renderChat();
 
-  }
+  renderHistory();
 
+  closeSidebar();
 
-  function createProject() {
-
-    const name =
-      projectNameInput.value.trim();
+  elements.messageInput?.focus();
+}
 
 
-    if (!name) {
-      return;
-    }
+/* =========================================
+   EVENTS
+========================================= */
 
+function setupEvents() {
 
-    const project =
-      document.createElement(
-        "button"
-      );
+  elements.menuButton?.addEventListener(
+    "click",
+    () => {
 
-
-    project.type =
-      "button";
-
-
-    project.className =
-      "project-item";
-
-
-    project.textContent =
-      name;
-
-
-    projectList.appendChild(
-      project
-    );
-
-
-    projectNameInput.value =
-      "";
-
-
-    closeProjectModal();
-
-  }
-
-
-  /* =======================================
-     EVENT LISTENERS
-  ======================================= */
-
-  if (sendButton) {
-
-    sendButton.addEventListener(
-      "click",
-      sendMessage
-    );
-
-  }
-
-
-  if (messageInput) {
-
-    messageInput.addEventListener(
-
-      "keydown",
-
-      event => {
-
-        if (
-          event.key === "Enter" &&
-          !event.shiftKey
-        ) {
-
-          event.preventDefault();
-
-          sendMessage();
-
-        }
-
-      }
-
-    );
-
-  }
-
-
-  if (newChatButton) {
-
-    newChatButton.addEventListener(
-      "click",
-      newChat
-    );
-
-  }
-
-
-  if (menuButton) {
-
-    menuButton.addEventListener(
-
-      "click",
-
-      () => {
-
-        sidebar.classList.toggle(
+      if (
+        elements.sidebar?.classList.contains(
           "open"
-        );
+        )
+      ) {
 
+        closeSidebar();
+
+      } else {
+
+        openSidebar();
       }
-
-    );
-
-  }
-
-
-  if (settingsButton) {
-
-    settingsButton.addEventListener(
-      "click",
-      openSettings
-    );
-
-  }
-
-
-  if (closeSettingsButton) {
-
-    closeSettingsButton.addEventListener(
-      "click",
-      closeSettings
-    );
-
-  }
-
-
-  if (saveProviderButton) {
-
-    saveProviderButton.addEventListener(
-      "click",
-      saveProviderSettings
-    );
-
-  }
-
-
-  if (providerSelect) {
-
-    providerSelect.addEventListener(
-      "change",
-      changeProvider
-    );
-
-  }
-
-
-  if (attachButton) {
-
-    attachButton.addEventListener(
-
-      "click",
-
-      () => {
-
-        fileInput.click();
-
-      }
-
-    );
-
-  }
-
-
-  if (fileInput) {
-
-    fileInput.addEventListener(
-
-      "change",
-
-      event => {
-
-        handleFiles(
-          event.target.files
-        );
-
-      }
-
-    );
-
-  }
-
-
-  if (createProjectButton) {
-
-    createProjectButton.addEventListener(
-      "click",
-      openProjectModal
-    );
-
-  }
-
-
-  if (cancelProjectButton) {
-
-    cancelProjectButton.addEventListener(
-      "click",
-      closeProjectModal
-    );
-
-  }
-
-
-  if (confirmProjectButton) {
-
-    confirmProjectButton.addEventListener(
-      "click",
-      createProject
-    );
-
-  }
-
-
-  /* Close modals on outside click */
-
-  if (settingsModal) {
-
-    settingsModal.addEventListener(
-
-      "click",
-
-      event => {
-
-        if (
-          event.target ===
-          settingsModal
-        ) {
-
-          closeSettings();
-
-        }
-
-      }
-
-    );
-
-  }
-
-
-  if (projectModal) {
-
-    projectModal.addEventListener(
-
-      "click",
-
-      event => {
-
-        if (
-          event.target ===
-          projectModal
-        ) {
-
-          closeProjectModal();
-
-        }
-
-      }
-
-    );
-
-  }
-
-
-  console.log(
-    "MASTER AI loaded successfully."
+    }
   );
 
-});
+
+  elements.sidebarOverlay?.addEventListener(
+    "click",
+    closeSidebar
+  );
+
+
+  elements.newChatButton?.addEventListener(
+    "click",
+    startNewChat
+  );
+
+
+  elements.sendButton?.addEventListener(
+    "click",
+    () => sendMessage()
+  );
+
+
+  elements.messageInput?.addEventListener(
+    "input",
+    autoResizeInput
+  );
+
+
+  elements.messageInput?.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+
+        event.preventDefault();
+
+        sendMessage();
+      }
+    }
+  );
+
+
+  elements.attachButton?.addEventListener(
+    "click",
+    () => {
+
+      elements.fileInput?.click();
+    }
+  );
+
+
+  elements.fileInput?.addEventListener(
+    "change",
+    event => {
+
+      handleFiles(
+        event.target.files
+      );
+    }
+  );
+
+
+  elements.settingsButton?.addEventListener(
+    "click",
+    openSettings
+  );
+
+
+  elements.closeSettingsButton?.addEventListener(
+    "click",
+    closeSettings
+  );
+
+
+  elements.settingsModal?.addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target ===
+        elements.settingsModal
+      ) {
+
+        closeSettings();
+      }
+    }
+  );
+
+
+  elements.providerSelect?.addEventListener(
+    "change",
+    updateProviderForm
+  );
+
+
+  elements.saveProviderButton?.addEventListener(
+    "click",
+    saveSettings
+  );
+
+
+  elements.previewClear?.addEventListener(
+    "click",
+    clearPreview
+  );
+
+
+  elements.micButton?.addEventListener(
+    "click",
+    startListening
+  );
+
+
+  elements.liveButton?.addEventListener(
+    "click",
+    openLive
+  );
+
+
+  elements.liveClose?.addEventListener(
+    "click",
+    closeLive
+  );
+
+
+  elements.liveStop?.addEventListener(
+    "click",
+    closeLive
+  );
+
+
+  elements.liveOrb?.addEventListener(
+    "click",
+    startListening
+  );
+
+
+  window.addEventListener(
+    "resize",
+    () => {
+
+      if (
+        window.innerWidth > 800
+      ) {
+
+        closeSidebar();
+      }
+    }
+  );
+
+
+  document.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key === "Escape"
+      ) {
+
+        closeSidebar();
+
+        closeSettings();
+
+        if (liveActive) {
+
+          closeLive();
+        }
+      }
+    }
+  );
+}
+
+
+/* =========================================
+   PROJECTS
+========================================= */
+
+function setupProjects() {
+
+  elements.createProjectButton?.addEventListener(
+    "click",
+    () => {
+
+      const name =
+        prompt(
+          "Project name:"
+        );
+
+      if (!name?.trim())
+        return;
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+      button.className =
+        "project-item";
+
+      button.textContent =
+        name.trim();
+
+      elements.projectList?.appendChild(
+        button
+      );
+    }
+  );
+}
+
+
+/* =========================================
+   INITIALIZATION
+========================================= */
+
+function initialize() {
+
+  getCurrentChat();
+
+  renderChat();
+
+  renderHistory();
+
+  renderAttachments();
+
+  clearPreview();
+
+  setupSpeechRecognition();
+
+  setupEvents();
+
+  setupProjects();
+
+  autoResizeInput();
+
+  window.MASTER_AI = {
+
+    get config() {
+      return config;
+    },
+
+    get chats() {
+      return chats;
+    },
+
+    createChat,
+
+    sendMessage,
+
+    openSettings,
+
+    openLive,
+
+    startListening
+  };
+
+  console.log(
+    "MASTER AI initialized."
+  );
+}
+
+
+/* =========================================
+   START
+========================================= */
+
+if (
+  document.readyState ===
+  "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    initialize
+  );
+
+} else {
+
+  initialize();
+}
