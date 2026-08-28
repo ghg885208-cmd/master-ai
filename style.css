@@ -8,7 +8,9 @@
   --bg: #0d0d0f;
   --panel: #141416;
   --panel-2: #202024;
-  --border: #29292d;
+  --panel-3: #28282d;
+  --border: #303035;
+  --text: #f5f5f5;
   --muted: #9b9ba3;
 }
 
@@ -19,7 +21,7 @@ body {
 
 body {
   background: var(--bg);
-  color: #f5f5f5;
+  color: var(--text);
   font-family: Arial, sans-serif;
   overflow: hidden;
 }
@@ -32,6 +34,9 @@ input {
 button {
   cursor: pointer;
 }
+
+
+/* APP */
 
 .app {
   display: flex;
@@ -60,33 +65,64 @@ button {
   letter-spacing: 2px;
 }
 
-.new-chat {
+.new-chat,
+.create-project {
   width: 100%;
   padding: 13px;
-  border: 1px solid #3a3a3f;
+  border: 1px solid #3a3a40;
   border-radius: 10px;
   background: var(--panel-2);
   color: white;
   font-size: 15px;
+  text-align: left;
+}
+
+.new-chat:active,
+.create-project:active {
+  transform: scale(0.98);
 }
 
 .section-title {
-  color: #8d8d96;
+  color: var(--muted);
   font-size: 12px;
   margin: 14px 0 10px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.history-item {
-  padding: 10px;
+.history-list,
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+
+/* HISTORY + PROJECT ITEMS */
+
+.history-item,
+.project-item {
+  width: 100%;
+  border: none;
+  background: transparent;
   color: #c8c8cc;
+  padding: 11px 10px;
   border-radius: 8px;
+  text-align: left;
   font-size: 14px;
   word-break: break-word;
 }
 
-.history-item:hover {
+.history-item:hover,
+.project-item:hover,
+.history-item.active,
+.project-item.active {
   background: var(--panel-2);
+  color: white;
+}
+
+.create-project {
+  margin-top: 12px;
 }
 
 
@@ -115,7 +151,7 @@ button {
 
 .menu-button {
   display: none;
-  border: 0;
+  border: none;
   background: transparent;
   color: white;
   font-size: 24px;
@@ -138,6 +174,9 @@ button {
   display: flex;
   overflow: hidden;
 }
+
+
+/* CHAT */
 
 .chat {
   flex: 1;
@@ -163,10 +202,40 @@ button {
 }
 
 
+/* MESSAGES */
+
+.message {
+  max-width: 760px;
+  margin: 15px auto;
+  padding: 14px 16px;
+  border-radius: 12px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.message.user {
+  background: #29292e;
+  text-align: right;
+}
+
+.message.master {
+  background: #18181b;
+  border: 1px solid #242429;
+}
+
+.message .file-note {
+  display: block;
+  margin-top: 7px;
+  color: #aaaab2;
+  font-size: 13px;
+}
+
+
 /* CANVAS */
 
 .canvas {
   width: 42%;
+  min-width: 300px;
   border-left: 1px solid var(--border);
   background: #111113;
   padding: 20px;
@@ -176,9 +245,12 @@ button {
   display: flex;
   justify-content: space-between;
   margin-bottom: 18px;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .canvas-title {
+  color: white;
   font-weight: bold;
 }
 
@@ -195,7 +267,7 @@ button {
 }
 
 
-/* INPUT AREA */
+/* INPUT */
 
 .input-area {
   flex: 0 0 auto;
@@ -208,7 +280,7 @@ button {
   max-width: 900px;
   margin: 0 auto;
   background: var(--panel-2);
-  border: 1px solid #34343a;
+  border: 1px solid #38383e;
   border-radius: 16px;
   padding: 8px;
   display: flex;
@@ -230,12 +302,12 @@ button {
   height: 42px;
   border-radius: 10px;
   background: transparent;
-  color: #d8d8dc;
-  font-size: 21px;
+  color: white;
+  font-size: 20px;
 }
 
-.attach:active {
-  background: #303036;
+.attach:hover {
+  background: var(--panel-3);
 }
 
 .input-wrap {
@@ -254,6 +326,10 @@ button {
   padding: 9px 4px;
 }
 
+.input-wrap input::placeholder {
+  color: #85858d;
+}
+
 .attachment-name {
   display: none;
   color: var(--muted);
@@ -269,7 +345,7 @@ button {
 }
 
 
-/* SEND BUTTON */
+/* SEND */
 
 .send {
   width: 44px;
@@ -286,31 +362,79 @@ button {
 }
 
 
-/* CHAT MESSAGES */
+/* PROJECT MODAL */
 
-.message {
-  max-width: 700px;
-  margin: 15px auto;
-  padding: 14px 16px;
-  border-radius: 12px;
-  line-height: 1.5;
-  word-break: break-word;
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.65);
 }
 
-.message.user {
-  background: #27272b;
-  text-align: right;
+.modal.show {
+  display: flex;
 }
 
-.message.master {
+.modal-box {
+  width: min(100%, 420px);
   background: #18181b;
+  border: 1px solid #34343a;
+  border-radius: 16px;
+  padding: 24px;
 }
 
-.message .file-note {
-  display: block;
-  margin-top: 7px;
-  color: #aaaab2;
-  font-size: 13px;
+.modal-box h2 {
+  margin-bottom: 8px;
+}
+
+.modal-box p {
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.modal-box input {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: 1px solid #38383e;
+  background: #242428;
+  color: white;
+  outline: none;
+}
+
+.modal-box input:focus {
+  border-color: #777780;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.modal-actions button {
+  padding: 10px 16px;
+  border-radius: 9px;
+}
+
+.modal-cancel {
+  border: 1px solid #3a3a40;
+  background: transparent;
+  color: white;
+}
+
+.modal-create {
+  border: none;
+  background: white;
+  color: black;
 }
 
 
@@ -324,7 +448,8 @@ button {
 
   .sidebar {
     position: fixed;
-    z-index: 10;
+    z-index: 50;
+
     top: 0;
     bottom: 0;
     left: 0;
@@ -371,7 +496,10 @@ button {
   }
 
   .input-area {
-    padding: 12px 12px calc(22px + env(safe-area-inset-bottom));
+    padding:
+      12px
+      12px
+      calc(26px + env(safe-area-inset-bottom));
   }
 
   .input-box {
