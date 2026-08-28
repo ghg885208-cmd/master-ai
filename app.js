@@ -1,67 +1,279 @@
-const input = document.querySelector("input");
+const input = document.querySelector(".input-wrap input");
 const sendButton = document.querySelector(".send");
 const chat = document.querySelector(".chat");
 const newChatButton = document.querySelector(".new-chat");
 
-function addMessage(text, sender) {
+const attachButton = document.querySelector(".attach");
+const fileInput = document.querySelector("#fileInput");
+const attachmentName = document.querySelector(".attachment-name");
+
+const menuButton = document.querySelector("#menuButton");
+const sidebar = document.querySelector("#sidebar");
+
+
+let selectedFile = null;
+
+
+/* ADD MESSAGE */
+
+function addMessage(text, sender, fileName = "") {
+
   const message = document.createElement("div");
 
-  message.style.maxWidth = "700px";
-  message.style.margin = "15px auto";
-  message.style.padding = "14px 16px";
-  message.style.borderRadius = "12px";
-  message.style.lineHeight = "1.5";
+  message.className = `message ${sender}`;
+
 
   if (sender === "user") {
-    message.style.background = "#27272b";
-    message.style.textAlign = "right";
+
+    message.textContent = text;
+
   } else {
-    message.style.background = "#18181b";
-    message.innerHTML = "<strong>MASTER</strong><br>" + text;
+
+    message.innerHTML =
+      `<strong>MASTER</strong><br>${text}`;
+
   }
 
+
+  if (fileName) {
+
+    const note = document.createElement("span");
+
+    note.className = "file-note";
+
+    note.textContent = `📎 ${fileName}`;
+
+    message.appendChild(note);
+
+  }
+
+
   chat.appendChild(message);
+
   chat.scrollTop = chat.scrollHeight;
+
 }
 
+
+/* SEND MESSAGE */
+
 function sendMessage() {
+
   const text = input.value.trim();
 
-  if (!text) return;
+
+  if (!text && !selectedFile) return;
+
 
   const welcome = document.querySelector(".welcome");
 
   if (welcome) {
+
     welcome.remove();
+
   }
 
-  addMessage(text, "user");
+
+  const fileName =
+    selectedFile ? selectedFile.name : "";
+
+
+  addMessage(
+    text || "Attached a file",
+    "user",
+    fileName
+  );
+
 
   input.value = "";
 
+
+  selectedFile = null;
+
+
+  fileInput.value = "";
+
+
+  attachmentName.textContent = "";
+
+
+  attachmentName.classList.remove("show");
+
+
   setTimeout(() => {
+
     addMessage(
+
       "I'm currently running in prototype mode. AI responses will be connected in the next phase.",
+
       "master"
+
     );
+
   }, 500);
+
 }
 
-sendButton.addEventListener("click", sendMessage);
 
-input.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    sendMessage();
+/* SEND BUTTON */
+
+sendButton.addEventListener(
+  "click",
+  sendMessage
+);
+
+
+/* ENTER KEY */
+
+input.addEventListener(
+  "keydown",
+
+  (event) => {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
+
+    }
+
   }
-});
+);
 
-newChatButton.addEventListener("click", () => {
-  chat.innerHTML = `
-    <div class="welcome">
-      <h1>New conversation</h1>
-      <p>What would you like to work on?</p>
-    </div>
-  `;
 
-  input.focus();
-});
+/* ATTACH FILE */
+
+attachButton.addEventListener(
+  "click",
+
+  () => {
+
+    fileInput.click();
+
+  }
+);
+
+
+fileInput.addEventListener(
+  "change",
+
+  () => {
+
+    selectedFile =
+      fileInput.files[0] || null;
+
+
+    if (selectedFile) {
+
+      attachmentName.textContent =
+        `Attached: ${selectedFile.name}`;
+
+
+      attachmentName.classList.add("show");
+
+    } else {
+
+      attachmentName.textContent = "";
+
+
+      attachmentName.classList.remove("show");
+
+    }
+
+  }
+);
+
+
+/* NEW CHAT */
+
+newChatButton.addEventListener(
+  "click",
+
+  () => {
+
+    chat.innerHTML = `
+
+      <div class="welcome">
+
+        <h1>
+          New conversation
+        </h1>
+
+        <p>
+          What would you like to work on?
+        </p>
+
+      </div>
+
+    `;
+
+
+    selectedFile = null;
+
+
+    fileInput.value = "";
+
+
+    attachmentName.textContent = "";
+
+
+    attachmentName.classList.remove("show");
+
+
+    input.focus();
+
+
+    if (
+      window.innerWidth <= 800
+    ) {
+
+      sidebar.classList.remove("open");
+
+    }
+
+  }
+);
+
+
+/* MOBILE MENU */
+
+menuButton.addEventListener(
+  "click",
+
+  () => {
+
+    sidebar.classList.toggle("open");
+
+  }
+);
+
+
+/* CLOSE MENU */
+
+document.addEventListener(
+  "click",
+
+  (event) => {
+
+    if (
+
+      window.innerWidth <= 800 &&
+
+      sidebar.classList.contains("open") &&
+
+      !sidebar.contains(event.target) &&
+
+      !menuButton.contains(event.target)
+
+    ) {
+
+      sidebar.classList.remove("open");
+
+    }
+
+  }
+);
