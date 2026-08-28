@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
 
@@ -13,59 +14,86 @@
   <link rel="stylesheet" href="style.css">
 </head>
 
+
 <body>
 
   <div class="app">
 
+
     <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
+
+    <aside
+      class="sidebar"
+      id="sidebar"
+    >
 
       <div class="logo">
         MASTER
       </div>
 
-      <button class="new-chat" id="newChatButton">
+
+      <button
+        class="new-chat"
+        id="newChatButton"
+        type="button"
+      >
         ＋ New Chat
       </button>
 
 
       <!-- HISTORY -->
+
       <div class="history">
 
         <div class="section-title">
           History
         </div>
 
+
         <div
-          class="history-list"
           id="historyList"
-        >
-          <!-- Chats JavaScript se aayengi -->
-        </div>
+          class="history-list"
+        ></div>
 
       </div>
 
 
       <!-- PROJECTS -->
+
       <div class="projects">
 
         <div class="section-title">
           Projects
         </div>
 
-        <div
-          class="project-list"
-          id="projectList"
-        >
-          <!-- Projects JavaScript se aayenge -->
-        </div>
-
 
         <button
-          class="create-project"
           id="createProjectButton"
+          class="history-item create-project"
+          type="button"
         >
           ＋ Create Project
+        </button>
+
+
+        <div
+          id="projectList"
+          class="project-list"
+        ></div>
+
+      </div>
+
+
+      <!-- FUTURE SETTINGS -->
+
+      <div class="sidebar-bottom">
+
+        <button
+          class="settings-button"
+          id="settingsButton"
+          type="button"
+        >
+          ⚙ Settings
         </button>
 
       </div>
@@ -73,23 +101,29 @@
     </aside>
 
 
+
     <!-- MAIN -->
+
     <main class="main">
 
 
-      <!-- TOP BAR -->
+      <!-- TOPBAR -->
+
       <header class="topbar">
 
         <button
           class="menu-button"
           id="menuButton"
+          type="button"
           aria-label="Open menu"
         >
           ☰
         </button>
 
 
-        <strong id="chatTitle">
+        <strong
+          id="chatTitle"
+        >
           MASTER
         </strong>
 
@@ -101,11 +135,14 @@
       </header>
 
 
+
       <!-- CONTENT -->
+
       <div class="content">
 
 
         <!-- CHAT -->
+
         <section
           class="chat"
           id="chat"
@@ -117,6 +154,7 @@
               How can I help?
             </h1>
 
+
             <p>
               I'm MASTER, your personal AI workspace.
               Ask, create, analyse, build and explore.
@@ -127,10 +165,11 @@
         </section>
 
 
+
         <!-- CANVAS -->
+
         <aside
           class="canvas"
-          id="canvas"
         >
 
           <div class="canvas-header">
@@ -139,7 +178,8 @@
               Canvas
             </span>
 
-            <span id="canvasStatus">
+
+            <span>
               Preview
             </span>
 
@@ -155,25 +195,30 @@
 
         </aside>
 
+
       </div>
 
 
-      <!-- INPUT -->
+
+      <!-- INPUT AREA -->
+
       <div class="input-area">
 
         <div class="input-box">
 
 
           <!-- FILE INPUT -->
+
           <input
             id="fileInput"
             type="file"
-            multiple
             hidden
+            multiple
           >
 
 
           <!-- ATTACH -->
+
           <button
             class="attach"
             id="attachButton"
@@ -184,7 +229,9 @@
           </button>
 
 
+
           <!-- TEXT INPUT -->
+
           <div class="input-wrap">
 
             <input
@@ -204,7 +251,9 @@
           </div>
 
 
+
           <!-- SEND -->
+
           <button
             class="send"
             id="sendButton"
@@ -214,16 +263,20 @@
             ↑
           </button>
 
+
         </div>
 
       </div>
+
 
     </main>
 
   </div>
 
 
+
   <!-- PROJECT MODAL -->
+
   <div
     class="modal"
     id="projectModal"
@@ -235,31 +288,27 @@
         Create Project
       </h2>
 
-      <p>
-        Give your project a name.
-      </p>
-
 
       <input
-        type="text"
         id="projectNameInput"
-        placeholder="My Project"
+        type="text"
+        placeholder="Project name..."
       >
 
 
       <div class="modal-actions">
 
         <button
-          class="modal-cancel"
           id="cancelProjectButton"
+          type="button"
         >
           Cancel
         </button>
 
 
         <button
-          class="modal-create"
           id="confirmProjectButton"
+          type="button"
         >
           Create
         </button>
@@ -271,7 +320,155 @@
   </div>
 
 
+
+  <!-- SETTINGS MODAL -->
+
+  <div
+    class="modal"
+    id="settingsModal"
+  >
+
+    <div class="modal-box settings-box">
+
+      <div class="settings-header">
+
+        <h2>
+          AI Settings
+        </h2>
+
+
+        <button
+          id="closeSettingsButton"
+          type="button"
+          aria-label="Close settings"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <p class="settings-note">
+        API provider settings.
+      </p>
+
+
+      <!-- PROVIDER -->
+
+      <label>
+        Active Provider
+      </label>
+
+
+      <select
+        id="providerSelect"
+      >
+        <option value="deepseek">
+          DeepSeek
+        </option>
+
+        <option value="openai">
+          OpenAI
+        </option>
+
+        <option value="gemini">
+          Gemini
+        </option>
+
+        <option value="claude">
+          Claude
+        </option>
+
+      </select>
+
+
+
+      <!-- API KEY -->
+
+      <label>
+        API Key
+      </label>
+
+
+      <input
+        id="providerApiKey"
+        type="password"
+        placeholder="Paste API key..."
+      >
+
+
+
+      <!-- ENDPOINT -->
+
+      <label>
+        API Endpoint
+      </label>
+
+
+      <input
+        id="providerEndpoint"
+        type="text"
+        placeholder="API endpoint..."
+      >
+
+
+
+      <!-- MODEL -->
+
+      <label>
+        Model
+      </label>
+
+
+      <input
+        id="providerModel"
+        type="text"
+        placeholder="Model name..."
+      >
+
+
+
+      <!-- SAVE -->
+
+      <button
+        id="saveProviderButton"
+        class="save-provider"
+        type="button"
+      >
+        Save Provider
+      </button>
+
+
+      <p
+        id="settingsStatus"
+        class="settings-status"
+      ></p>
+
+
+      <hr>
+
+
+      <!-- FUTURE CUSTOM PROVIDER -->
+
+      <h3>
+        Future Custom AI
+      </h3>
+
+
+      <p class="settings-note">
+        New providers can be added here later.
+      </p>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- SCRIPT -->
+
   <script src="app.js"></script>
 
 </body>
+
 </html>
