@@ -1,0 +1,2626 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MASTER AI</title>
+  <meta name="theme-color" content="#0d0f14">
+  <meta name="description" content="MASTER AI private multimodal assistant workspace">
+  <style>
+/* =========================================
+   MASTER AI — COMPLETE APP STYLES
+   CHAT + LIVE VOICE MODE
+========================================= */
+
+:root {
+  --bg: #0d0f14;
+  --panel: #151923;
+  --panel-light: #1c2230;
+
+  --text: #f5f7fb;
+  --muted: #9ca4b5;
+
+  --accent: #668cff;
+  --accent-2: #3e67e8;
+
+  --border: rgba(255, 255, 255, 0.08);
+
+  --danger: #ea3029;
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+/* =========================================
+   RESET
+========================================= */
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { width: 100%; height: 100%; }
+
+body {
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+button { font: inherit; border: none; cursor: pointer; background: none; color: inherit; }
+button:active { transform: scale(0.96); }
+input, select { font: inherit; color: var(--text); }
+
+/* =========================================
+   APP LAYOUT
+========================================= */
+
+.app { width: 100%; height: 100dvh; display: flex; overflow: hidden; }
+
+.main { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; }
+
+.topbar {
+  height: 58px;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(13, 15, 20, 0.96);
+}
+
+.topbar strong { flex: 1; font-size: 16px; }
+.menu-button { display: none; font-size: 20px; padding: 6px 8px; border-radius: 8px; }
+.status { font-size: 12px; color: #77d998; }
+
+/* CONTENT = chat + preview side by side */
+.content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* =========================================
+   CHAT AREA
+========================================= */
+
+.chat { flex: 1; min-width: 0; min-height: 0; overflow-y: auto; padding: 20px 16px 24px; }
+
+.welcome { max-width: 720px; margin: 8vh auto; text-align: center; }
+.welcome h1 { margin: 0 0 12px; font-size: clamp(30px, 7vw, 48px); }
+.welcome p { margin: 0 0 20px; color: var(--muted); line-height: 1.6; }
+
+.master-orb {
+  width: 72px; height: 72px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  position: relative;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 40% 35%, #5dcbff, #3f65d7 60%, #202a37 100%);
+}
+.master-orb .orb-core { font-weight: 800; font-size: 22px; color: #fff; }
+.master-orb .orb-ring {
+  position: absolute; inset: -6px; border-radius: 50%;
+  border: 1px solid rgba(102,140,255,0.35);
+  animation: orbIdle 5s ease-in-out infinite;
+}
+.master-orb .ring-two { inset: -14px; opacity: .5; animation-delay: .6s; }
+
+.capability-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.capability-card {
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-align: left;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.capability-card span { display: block; font-size: 20px; margin-bottom: 6px; }
+.capability-card:hover { background: var(--panel-light); }
+
+/* =========================================
+   MESSAGES
+========================================= */
+
+.message {
+  width: fit-content;
+  max-width: min(820px, 92%);
+  padding: 14px 16px;
+  margin: 12px 0;
+  border-radius: 16px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message.user {
+  margin-left: auto;
+  background: linear-gradient(135deg, #31457d, #26345f);
+  border-bottom-right-radius: 5px;
+}
+
+.message.master {
+  margin-right: auto;
+  background: #181d27;
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 5px;
+}
+
+.message.master strong { color: var(--accent); font-size: 13px; display: block; margin-bottom: 4px; }
+
+.message.loading .dots { display: inline-flex; gap: 4px; }
+.message.loading .dots span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--muted);
+  animation: dotPulse 1s infinite ease-in-out;
+}
+.message.loading .dots span:nth-child(2) { animation-delay: .15s; }
+.message.loading .dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes dotPulse { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+.file-note {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* =========================================
+   PREVIEW / CANVAS PANEL
+========================================= */
+
+.canvas {
+  width: 340px;
+  min-width: 340px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.canvas-header {
+  height: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.canvas-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+.canvas-clear {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.canvas-clear:hover { color: var(--text); background: var(--panel-light); }
+
+.preview {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* =========================================
+   INPUT AREA
+========================================= */
+
+.input-area {
+  flex: none;
+  padding: 10px 12px calc(12px + var(--safe-bottom));
+  border-top: 1px solid var(--border);
+  background: rgba(13, 15, 20, 0.98);
+}
+
+.attachment-name {
+  max-width: 950px;
+  margin: 0 auto 6px;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.attachment-name:empty { display: none; }
+.attachment-name .chip {
+  background: var(--panel-light);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.attachment-name .chip button { color: var(--danger); font-weight: 700; }
+
+.input-box {
+  width: 100%;
+  max-width: 950px;
+  min-height: 56px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px;
+  background: #171c26;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+}
+
+.input-wrap { flex: 1; min-width: 0; }
+
+#messageInput {
+  width: 100%;
+  min-height: 42px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  padding: 8px 10px;
+}
+#messageInput::placeholder { color: #778093; }
+
+.attach, .send, .mic-button {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+}
+
+.attach { color: var(--muted); font-size: 20px; }
+.mic-button { color: var(--muted); font-size: 19px; }
+.mic-button:hover { background: var(--panel-light); }
+
+.send {
+  background: linear-gradient(135deg, #7898ff, #4d70df);
+  color: white;
+  font-size: 21px;
+}
+.send:disabled { opacity: .55; cursor: wait; transform: none; }
+.attach:focus-visible, .send:focus-visible, .mic-button:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* =========================================
+   LIVE MODE (fullscreen voice)
+========================================= */
+
+.live-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #15171b 0%, #171a20 55%, #263648 100%);
+}
+.live-screen.show { display: flex; }
+
+.live-header {
+  height: 100px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding-top: var(--safe-top);
+}
+
+.live-title { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 500; color: #f4f4f5; }
+.live-spark { font-size: 30px; animation: sparkle 2s infinite ease-in-out; }
+
+@keyframes sparkle {
+  0% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
+
+.live-close-top {
+  position: absolute;
+  right: 20px;
+  top: calc(28px + var(--safe-top));
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  color: white;
+  font-size: 27px;
+}
+
+.live-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px 30px;
+  position: relative;
+}
+
+.live-status {
+  position: absolute;
+  top: 25px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}
+.live-status.listening { color: #9ec2ff; }
+.live-status.speaking { color: #a7ffd1; }
+
+.live-orb {
+  width: min(82vw, 560px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(93,203,255,0.9), transparent 27%),
+    radial-gradient(circle at 55% 70%, rgba(65,111,255,0.95), transparent 40%),
+    radial-gradient(circle at 83% 72%, rgba(191,218,137,0.65), transparent 20%),
+    radial-gradient(circle at 50% 45%, #35485d, #202a37 55%, #111419 100%);
+  box-shadow:
+    0 0 80px rgba(74,136,255,0.22),
+    inset 0 0 70px rgba(110,184,255,0.16);
+  animation: orbIdle 5s ease-in-out infinite;
+}
+
+@keyframes orbIdle {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.035); filter: brightness(1.12); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.live-orb::before {
+  content: "";
+  position: absolute;
+  inset: -25px;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(74,139,255,0.28), transparent 65%);
+  filter: blur(20px);
+  z-index: -1;
+}
+
+.live-orb.listening { animation: listeningOrb 0.9s ease-in-out infinite alternate; }
+@keyframes listeningOrb {
+  from { transform: scale(0.98); box-shadow: 0 0 40px rgba(78,147,255,0.3); }
+  to { transform: scale(1.08); box-shadow: 0 0 100px rgba(78,147,255,0.7); }
+}
+
+.live-orb.speaking { animation: speakingOrb 0.55s infinite alternate; }
+@keyframes speakingOrb {
+  from { transform: scale(0.99) rotate(-0.5deg); }
+  to { transform: scale(1.06) rotate(0.5deg); }
+}
+
+.live-orb.thinking { animation: speakingOrb 1.1s infinite alternate; filter: saturate(0.7); }
+
+.live-controls {
+  flex: none;
+  width: 100%;
+  padding: 25px 28px calc(32px + var(--safe-bottom));
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  background: linear-gradient(180deg, rgba(24,35,48,0.55), rgba(31,47,65,0.95));
+}
+
+.live-control {
+  width: 74px; height: 74px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  flex: none;
+  background: linear-gradient(145deg, #202634, #171c27);
+  color: #f2f4f8;
+  font-size: 28px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.live-control:hover { background: #293246; }
+
+.live-mic.active {
+  background: linear-gradient(135deg, #6287ff, #3f65d7);
+  box-shadow: 0 0 35px rgba(91,135,255,0.5);
+}
+
+.live-end { background: linear-gradient(135deg, #ff3d34, #db211b); font-size: 30px; }
+.live-end:hover { background: #ef2b24; }
+
+.live-transcript {
+  position: absolute;
+  bottom: 145px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(88%, 650px);
+  max-height: 130px;
+  overflow-y: auto;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 16px;
+  line-height: 1.5;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.live-transcript.show { opacity: 1; }
+
+/* =========================================
+   SIDEBAR
+========================================= */
+
+.sidebar {
+  width: 270px;
+  min-width: 270px;
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  background: #11151e;
+  border-right: 1px solid var(--border);
+}
+
+.logo { padding: 10px 8px 22px; font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+
+.new-chat {
+  width: 100%;
+  padding: 13px;
+  text-align: left;
+  color: white;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 4px 8px; }
+
+.history { flex: 1; overflow-y: auto; margin-top: 6px; }
+.projects { flex: none; max-height: 30vh; overflow-y: auto; }
+
+.history-list, .project-list { display: flex; flex-direction: column; gap: 6px; }
+
+.history-item, .project-item {
+  width: 100%;
+  padding: 11px;
+  text-align: left;
+  color: #c6cbd5;
+  background: transparent;
+  border-radius: 9px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.history-item:hover, .project-item:hover { background: var(--panel-light); }
+.history-item.active { background: #202735; color: var(--text); }
+.create-project { color: var(--accent); }
+
+.sidebar-bottom { flex: none; padding-top: 12px; }
+
+.settings-button { width: 100%; padding: 12px; text-align: left; color: var(--muted); background: transparent; border-radius: 9px; }
+.settings-button:hover { background: var(--panel-light); color: var(--text); }
+
+/* sidebar overlay - mobile only, activated via .show */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 400;
+}
+.sidebar-overlay.show { display: block; }
+
+/* =========================================
+   MODALS (settings + project)
+========================================= */
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0,0,0,0.6);
+}
+.modal.show { display: flex; }
+
+.modal-box {
+  width: 100%;
+  max-width: 420px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.settings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.settings-header h2 { margin: 0; font-size: 18px; }
+.settings-header button { font-size: 22px; color: var(--muted); }
+
+.modal-box h2 { margin: 0 0 14px; font-size: 18px; }
+.modal-box h3 { margin: 18px 0 6px; font-size: 14px; }
+
+.settings-note { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 6px 0 14px; }
+
+.modal-box label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 6px; }
+
+.modal-box input[type="text"],
+.modal-box input[type="password"],
+.modal-box select {
+  width: 100%;
+  padding: 11px 12px;
+  background: var(--panel-light);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+}
+.modal-box input:focus, .modal-box select:focus { border-color: var(--accent); }
+
+.save-provider {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  text-align: center;
+  background: linear-gradient(135deg, #7898ff, #4d70df);
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.settings-status { margin-top: 10px; font-size: 12px; color: var(--muted); min-height: 16px; }
+.settings-status.success { color: #77d998; }
+.settings-status.error { color: var(--danger); }
+
+.modal-box hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+.provider-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+.provider-list:empty::after {
+  content: "No providers added yet.";
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.provider-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--panel-light);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.provider-item .provider-info { flex: 1; min-width: 0; }
+.provider-item .provider-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.provider-item .provider-meta { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.provider-item .provider-active-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #77d998;
+  box-shadow: 0 0 6px rgba(119,217,152,0.6);
+  flex: none;
+}
+
+.provider-item .provider-remove {
+  flex: none;
+  color: var(--danger);
+  font-size: 18px;
+  padding: 4px 8px;
+}
+
+.checkbox-row {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  margin: 14px 0 4px !important;
+}
+.checkbox-row input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--accent);
+}
+
+.save-tool-btn {
+  display: block;
+  margin-top: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--accent);
+  background: rgba(102,140,255,0.12);
+  border: 1px solid rgba(102,140,255,0.3);
+  border-radius: 8px;
+  align-self: flex-start;
+}
+.save-tool-btn:hover { background: rgba(102,140,255,0.2); }
+.save-tool-btn:disabled { color: #77d998; border-color: rgba(119,217,152,0.3); background: rgba(119,217,152,0.1); }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+.modal-actions button {
+  flex: 1;
+  padding: 11px;
+  border-radius: 10px;
+  background: var(--panel-light);
+  border: 1px solid var(--border);
+}
+.modal-actions button:last-child { background: linear-gradient(135deg, #7898ff, #4d70df); color: white; }
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 800px) {
+
+  .menu-button { display: grid; place-items: center; }
+
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 500;
+    width: min(86vw, 330px);
+    min-width: 0;
+    height: 100dvh;
+    transform: translateX(-110%);
+    transition: transform 0.25s ease;
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .chat { padding: 16px 12px 20px; }
+  .message { max-width: 94%; }
+  .welcome { margin: 6vh auto; }
+
+  /* Preview panel becomes a bottom sheet on mobile instead of side panel */
+  .content { flex-direction: column; }
+  .canvas {
+    width: 100%;
+    min-width: 0;
+    height: 34vh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+  .canvas.show { display: flex; }
+
+  .live-header { height: 90px; }
+  .live-title { font-size: 25px; }
+  .live-orb { width: min(88vw, 480px); }
+  .live-controls { gap: 12px; padding-left: 16px; padding-right: 16px; }
+  .live-control {
+    width: clamp(58px, 18vw, 74px);
+    height: clamp(58px, 18vw, 74px);
+    font-size: 24px;
+  }
+
+  .capability-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 380px) {
+  .live-controls { gap: 8px; }
+  .live-control { width: 56px; height: 56px; font-size: 21px; }
+  .live-orb { width: 84vw; }
+}
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #3a4353; border-radius: 20px; }
+
+</style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- ============== SIDEBAR OVERLAY (mobile) ============== -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ============== SIDEBAR ============== -->
+    <aside class="sidebar" id="sidebar">
+
+      <div class="logo">MASTER AI</div>
+
+      <button class="new-chat" id="newChatButton" type="button">＋ New Chat</button>
+
+      <div class="history">
+        <div class="section-title">Chat History</div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+      <div class="projects">
+        <div class="section-title">Projects</div>
+        <div class="project-list" id="projectList"></div>
+        <button class="project-item create-project" id="createProjectButton" type="button">＋ Create Project</button>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button class="settings-button" id="settingsButton" type="button">⚙ Settings</button>
+      </div>
+
+    </aside>
+
+    <!-- ============== MAIN ============== -->
+    <main class="main">
+
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" type="button" aria-label="Open menu">☰</button>
+        <strong>MASTER AI</strong>
+        <span class="status" id="connectionStatus">Ready</span>
+      </header>
+
+      <div class="content">
+
+        <section class="chat" id="chat">
+          <div class="welcome" id="welcomeScreen">
+            <h1>MASTER AI</h1>
+            <p>Type a message or talk using MASTER Live.</p>
+          </div>
+        </section>
+
+        <aside class="canvas" id="canvasPanel">
+          <div class="canvas-header">
+            <span class="canvas-title">Preview</span>
+            <button class="canvas-clear" id="previewClear" type="button" aria-label="Clear preview">Clear</button>
+          </div>
+          <div class="preview" id="preview">Preview output will appear here.</div>
+        </aside>
+
+      </div>
+
+      <!-- ============== INPUT ============== -->
+      <section class="input-area">
+
+        <div class="attachment-name" id="attachmentName"></div>
+
+        <div class="input-box">
+
+          <button class="attach" id="attachButton" type="button" aria-label="Attach files">📎</button>
+          <input type="file" id="fileInput" multiple hidden accept="*/*,image/*,video/*">
+
+          <div class="input-wrap">
+            <input id="messageInput" type="text" placeholder="Message MASTER AI..." autocomplete="off">
+          </div>
+
+          <button class="mic-button" id="micButton" type="button" aria-label="Talk to MASTER (Live)">🎙</button>
+          <button class="send" id="sendButton" type="button" aria-label="Send message">↑</button>
+
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+
+  <!-- ============== MASTER LIVE (fullscreen voice) ============== -->
+  <div class="live-screen" id="liveModal">
+
+    <div class="live-header">
+      <div class="live-title"><span class="live-spark">✦</span> MASTER Live</div>
+      <button class="live-close-top" id="liveClose" type="button" aria-label="Close live mode">×</button>
+    </div>
+
+    <div class="live-content">
+      <div class="live-status" id="liveStatus">Tap the circle to speak</div>
+      <div class="live-orb" id="liveOrb"></div>
+      <div class="live-transcript" id="liveTranscript"></div>
+    </div>
+
+    <div class="live-controls">
+      <button class="live-control live-mic" id="liveMicToggle" type="button" aria-label="Toggle microphone">🎙</button>
+      <button class="live-control live-end" id="liveStop" type="button" aria-label="End live session">✕</button>
+    </div>
+
+  </div>
+
+
+  <!-- ============== SETTINGS MODAL ============== -->
+  <div class="modal" id="settingsModal" aria-hidden="true">
+    <div class="modal-box settings-box" role="dialog" aria-modal="true">
+
+      <div class="settings-header">
+        <h2>Settings</h2>
+        <button id="closeSettingsButton" type="button" aria-label="Close settings">×</button>
+      </div>
+
+      <p class="settings-note">API settings and MASTER AI configuration. Keys are stored only in this browser (localStorage) — never written into any source file. Every provider you add here runs automatically in the background on every message — no need to pick one each time.</p>
+
+      <h3>Your Providers</h3>
+      <div class="provider-list" id="providerList"></div>
+
+      <h3>Add a Provider</h3>
+
+      <label for="providerSelect">API Provider</label>
+      <select id="providerSelect">
+        <option value="deepseek">DeepSeek</option>
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Google Gemini</option>
+        <option value="custom">Custom API</option>
+      </select>
+
+      <label for="apiUrlInput">API URL</label>
+      <input id="apiUrlInput" type="text" placeholder="API URL">
+
+      <label for="modelInput">Model</label>
+      <input id="modelInput" type="text" placeholder="Model name">
+
+      <label for="apiKeyInput">API Key</label>
+      <input id="apiKeyInput" type="password" placeholder="Paste API key" autocomplete="off">
+
+      <button class="save-provider" id="saveProviderButton" type="button">Add Provider</button>
+
+      <div class="settings-status" id="settingsStatus"></div>
+
+      <hr>
+
+      <h3>Memory</h3>
+      <p class="settings-note">Clear remembered information stored in this browser.</p>
+      <button class="save-provider" id="clearMemoryButton" type="button">Clear Memory</button>
+
+      <hr>
+
+      <h3>🖇 Integrations</h3>
+      <p class="settings-note">Optional — push every MASTER AI reply to a Telegram chat too. Get a token from @BotFather on Telegram, and your chat id from @userinfobot.</p>
+
+      <label for="telegramTokenInput">Telegram Bot Token</label>
+      <input id="telegramTokenInput" type="password" placeholder="123456:ABC-DEF..." autocomplete="off">
+
+      <label for="telegramChatIdInput">Telegram Chat ID</label>
+      <input id="telegramChatIdInput" type="text" placeholder="e.g. 123456789">
+
+      <label class="checkbox-row"><input type="checkbox" id="telegramEnabledCheckbox"> Send AI replies to Telegram</label>
+
+      <button class="save-provider" id="saveIntegrationsButton" type="button">Save Integrations</button>
+
+      <hr>
+
+      <h3>🔧 My AI Tools</h3>
+      <p class="settings-note">Code MASTER AI writes for you in chat can be saved here for review. Nothing here runs automatically — MASTER AI never executes code on its own, you copy and use it yourself.</p>
+      <div class="provider-list" id="toolsList"></div>
+
+    </div>
+  </div>
+
+
+  <!-- ============== PROJECT MODAL ============== -->
+  <div class="modal" id="projectModal" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true">
+
+      <h2>Create Project</h2>
+
+      <label for="projectNameInput">Project Name</label>
+      <input id="projectNameInput" type="text" placeholder="My new project">
+
+      <div class="modal-actions">
+        <button id="cancelProjectButton" type="button">Cancel</button>
+        <button id="saveProjectButton" type="button">Create</button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ==============================
+       SCRIPTS
+       Order matters: Config -> Intelligence -> App
+  =============================== -->
+
+  <script>
+/* ================= MASTER AI — ALL LOGIC (api-config + mastermind + app) ================= */
+/* =========================================
+   MASTER AI — API CONFIG
+   Supports MULTIPLE provider profiles so more than one AI can be
+   queried in the background. Single-source-of-truth for provider
+   metadata. NEVER put a real secret key literal in this file.
+   Keys live only in localStorage, set via Settings UI.
+========================================= */
+
+const MASTER_API_CONFIG = {
+
+  providers: {
+    deepseek: {
+      label: "DeepSeek",
+      url: "https://api.deepseek.com/chat/completions",
+      defaultModel: "deepseek-chat"
+    },
+    openai: {
+      label: "OpenAI",
+      url: "https://api.openai.com/v1/chat/completions",
+      defaultModel: "gpt-4o-mini"
+    },
+    gemini: {
+      label: "Google Gemini",
+      url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      defaultModel: "gemini-3.6-flash"
+    },
+    custom: {
+      label: "Custom API",
+      url: "",
+      defaultModel: ""
+    }
+  },
+
+  // Google/OpenAI deprecate model names over time. Instead of you having to
+  // manually fix this every few months, old saved model names are silently
+  // upgraded to the current one when profiles are loaded.
+  MODEL_ALIASES: {
+    "gemini-2.0-flash": "gemini-3.6-flash",
+    "gemini-2.5-flash": "gemini-3.6-flash",
+    "gemini-pro": "gemini-3.6-flash"
+  },
+
+  OLD_STORAGE_KEY: "master_ai_provider_config",   // legacy single-profile key
+  PROFILES_KEY: "master_ai_provider_profiles",     // new multi-profile key
+
+  /* ---------- multi-profile API ---------- */
+
+  loadProfiles() {
+    try {
+      const raw = localStorage.getItem(this.PROFILES_KEY);
+      if (raw) {
+        const profiles = JSON.parse(raw);
+        return this._migrateModelNames(profiles);
+      }
+    } catch (e) {
+      console.warn("MASTER_API_CONFIG: could not read profiles", e);
+    }
+
+    // Migrate an old single-config save into the new list format, once.
+    const legacy = this._loadLegacySingle();
+    if (legacy && legacy.apiKey) {
+      const migrated = [{
+        id: "migrated_" + Date.now(),
+        provider: legacy.provider,
+        label: this.providers[legacy.provider]?.label || legacy.provider,
+        url: legacy.url,
+        model: legacy.model,
+        apiKey: legacy.apiKey,
+        enabled: true
+      }];
+      this.saveProfiles(migrated);
+      return migrated;
+    }
+
+    return [];
+  },
+
+  saveProfiles(profiles) {
+    try {
+      localStorage.setItem(this.PROFILES_KEY, JSON.stringify(profiles));
+      return true;
+    } catch (e) {
+      console.warn("MASTER_API_CONFIG: could not save profiles", e);
+      return false;
+    }
+  },
+
+  addProfile(profile) {
+    const profiles = this.loadProfiles();
+    profiles.push({
+      id: "p_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+      enabled: true,
+      ...profile
+    });
+    this.saveProfiles(profiles);
+    return profiles;
+  },
+
+  removeProfile(id) {
+    const profiles = this.loadProfiles().filter(p => p.id !== id);
+    this.saveProfiles(profiles);
+    return profiles;
+  },
+
+  toggleProfile(id, enabled) {
+    const profiles = this.loadProfiles();
+    const target = profiles.find(p => p.id === id);
+    if (target) target.enabled = enabled;
+    this.saveProfiles(profiles);
+    return profiles;
+  },
+
+  getEnabledProfiles() {
+    // Every added provider with a key runs automatically, always —
+    // no per-session toggling needed.
+    return this.loadProfiles().filter(p => p.apiKey && p.url);
+  },
+
+  clearAllKeys() {
+    this.saveProfiles([]);
+    try { localStorage.removeItem(this.OLD_STORAGE_KEY); } catch {}
+  },
+
+  /* ---------- legacy single-config read (for migration only) ---------- */
+
+  _loadLegacySingle() {
+    try {
+      const raw = localStorage.getItem(this.OLD_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  _migrateModelNames(profiles) {
+    let changed = false;
+    profiles.forEach(p => {
+      if (this.MODEL_ALIASES[p.model]) {
+        p.model = this.MODEL_ALIASES[p.model];
+        changed = true;
+      }
+    });
+    if (changed) this.saveProfiles(profiles);
+    return profiles;
+  }
+
+};
+
+/*
+  SECURITY NOTE (do not remove):
+  This prototype calls AI providers directly from the browser using
+  keys stored in localStorage. That means every key is visible to
+  anyone with access to this browser/device and is sent directly from
+  the client on every request. This is acceptable ONLY for a private,
+  personal prototype you control.
+
+  [NEEDS BACKEND] For real production use (shared devices, public
+  hosting, mobile app store release), replace the direct fetches in
+  app.js with calls to your own backend endpoint, and move provider
+  API keys into that backend's environment variables/secrets. The
+  frontend should then never see any real key at all.
+*/
+
+
+
+/* =========================================
+   MASTER AI — MASTERMIND + MEMORY + VOICE
+   File: mastermind.js
+========================================= */
+
+"use strict";
+
+const MASTER_AI_ENGINE = {
+
+  /* =====================================
+     SYSTEM MODES
+  ===================================== */
+
+  modes: {
+    conversation: true,
+    analysis: true,
+    mastermind: true,
+    creative: true,
+    coding: true,
+    planning: true,
+    problemSolving: true,
+    futureThinking: true,
+    attachmentAnalysis: true,
+    memory: true,
+    preview: true,
+    voice: true
+  },
+
+
+  /* =====================================
+     MEMORY
+  ===================================== */
+
+  memoryKey: "master_ai_memory",
+
+  getMemory() {
+    try {
+      return JSON.parse(localStorage.getItem(this.memoryKey)) || this.getEmptyMemory();
+    } catch {
+      return this.getEmptyMemory();
+    }
+  },
+
+  getEmptyMemory() {
+    return { user: {}, facts: [], preferences: [], projects: [], conversations: [] };
+  },
+
+  saveMemory(memory) {
+    try {
+      localStorage.setItem(this.memoryKey, JSON.stringify(memory));
+    } catch (error) {
+      console.warn("MASTER memory save failed:", error);
+    }
+  },
+
+  remember(type, value) {
+    const memory = this.getMemory();
+    if (!memory[type]) memory[type] = [];
+
+    if (Array.isArray(memory[type])) {
+      const exists = memory[type].some(item => JSON.stringify(item) === JSON.stringify(value));
+      if (!exists) {
+        memory[type].push(value);
+        // Keep memory bounded so localStorage doesn't grow forever
+        if (memory[type].length > 100) {
+          memory[type] = memory[type].slice(-100);
+        }
+      }
+    } else {
+      memory[type] = value;
+    }
+
+    this.saveMemory(memory);
+  },
+
+  clearMemory() {
+    try {
+      localStorage.removeItem(this.memoryKey);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+
+  /* =====================================
+     MEMORY ANALYSIS (lightweight heuristics —
+     NOT a real NLP classifier, just keyword hints)
+  ===================================== */
+
+  analyseForMemory(text) {
+    if (typeof text !== "string") return;
+    const lower = text.toLowerCase().trim();
+
+    if (lower.includes("mera naam") || lower.includes("my name")) {
+      this.remember("facts", { type: "identity", value: text, time: Date.now() });
+    }
+
+    if (lower.includes("mujhe pasand") || lower.includes("i like") || lower.includes("i love") || lower.includes("mujhe achha lagta")) {
+      this.remember("preferences", { value: text, time: Date.now() });
+    }
+
+    if (lower.includes("mera project") || lower.includes("my project") || lower.includes("website bana") || lower.includes("app bana")) {
+      this.remember("projects", { value: text, time: Date.now() });
+    }
+
+    if (lower.includes("main ") || lower.includes("i am ") || lower.includes("i'm ")) {
+      this.remember("facts", { type: "user_statement", value: text, time: Date.now() });
+    }
+  },
+
+
+  /* =====================================
+     MEMORY CONTEXT
+  ===================================== */
+
+  getMemoryContext() {
+    const memory = this.getMemory();
+    const parts = [];
+
+    if (memory.facts && memory.facts.length) {
+      parts.push("REMEMBERED FACTS:\n" + memory.facts.slice(-20).map(i => i.value || "").join("\n"));
+    }
+
+    if (memory.preferences && memory.preferences.length) {
+      parts.push("USER PREFERENCES:\n" + memory.preferences.slice(-20).map(i => i.value || "").join("\n"));
+    }
+
+    if (memory.projects && memory.projects.length) {
+      parts.push("USER PROJECTS:\n" + memory.projects.slice(-15).map(i => i.value || "").join("\n"));
+    }
+
+    return parts.join("\n\n");
+  },
+
+
+  /* =====================================
+     MASTERMIND INSTRUCTIONS
+  ===================================== */
+
+  createMastermindInstructions() {
+    return `
+MASTERMIND SYSTEM IS ACTIVE.
+
+Before answering:
+1. Understand what the user actually wants.
+2. Identify the real problem.
+3. Check assumptions.
+4. Look for missing information.
+5. Consider multiple possibilities.
+6. Compare useful options.
+7. Consider short-term consequences.
+8. Consider long-term consequences.
+9. Identify important risks.
+10. Do not pretend certainty.
+11. Give a practical recommendation.
+
+FOR DECISIONS, analyse:
+- Option A
+- Option B
+- Other useful options
+- What happens if the user chooses each option
+- What happens if the user chooses nothing
+- Short-term effects
+- Long-term effects
+- Risks
+- Benefits
+
+Do not expose hidden chain-of-thought.
+Instead provide: key considerations, a clear comparison, important risks, and a final recommendation.
+`;
+  },
+
+
+  /* =====================================
+     MAIN SYSTEM PROMPT
+  ===================================== */
+
+  buildSystemPrompt() {
+    const memory = this.getMemoryContext();
+
+    return `
+You are MASTER AI, a personal AI workspace. All relevant capabilities work together automatically in a single reply — the user should not have to pick a "mode".
+
+ACTIVE CAPABILITIES:
+- Conversation
+- Deep analysis
+- Mastermind decision support
+- Problem solving
+- Creative thinking
+- Planning
+- Coding support
+- Project analysis
+- Future consequence analysis
+- Attachment awareness
+- Memory context
+
+IMPORTANT HONESTY RULES:
+- Do not unnecessarily announce which mode you're using.
+- Do not pretend that multiple external AI providers answered unless the system actually called them.
+- Do not claim an action (like generating an image, editing a video, or controlling a device) was completed unless it was actually completed by a connected tool.
+- If something requires a backend, external API, or native app that isn't connected yet, say so plainly instead of pretending it works.
+
+Your answers should be accurate, clear, direct, useful, and honest about uncertainty.
+
+LANGUAGE: The user may speak Hindi, Hinglish, or English. Reply naturally in the user's language.
+
+${this.createMastermindInstructions()}
+
+USER MEMORY CONTEXT:
+${memory || "No saved user memory yet."}
+`;
+  },
+
+
+  /* =====================================
+     REQUEST ANALYSIS
+  ===================================== */
+
+  analyseRequest(text) {
+    const lower = String(text).toLowerCase();
+    return {
+      wantsDecision: lower.includes("option") || lower.includes("choose") || lower.includes("kya hoga") || lower.includes("kaunsa") || lower.includes("which"),
+      wantsCoding: lower.includes("code") || lower.includes("javascript") || lower.includes("html") || lower.includes("css") || lower.includes("python") || lower.includes("bug"),
+      wantsPlanning: lower.includes("plan") || lower.includes("future") || lower.includes("roadmap") || lower.includes("strategy"),
+      wantsCreative: lower.includes("idea") || lower.includes("creative") || lower.includes("design"),
+      wantsAnalysis: true
+    };
+  },
+
+
+  /* =====================================
+     PREPARE MESSAGE
+  ===================================== */
+
+  prepareMessage(text) {
+    this.analyseForMemory(text);
+    const analysis = this.analyseRequest(text);
+
+    this.remember("conversations", { role: "user", content: text, time: Date.now() });
+
+    return { text, analysis, timestamp: new Date().toISOString() };
+  },
+
+
+  /* =====================================
+     API MESSAGE BUILDER
+     This is the function app.js MUST call so
+     memory + mastermind reasoning actually reach the model.
+  ===================================== */
+
+  buildMessages(history, userText) {
+    const prepared = this.prepareMessage(userText);
+    const systemPrompt = this.buildSystemPrompt();
+
+    const messages = [{ role: "system", content: systemPrompt }];
+
+    if (Array.isArray(history)) {
+      history.slice(-30).forEach(message => {
+        if (!message || !message.content) return;
+        messages.push({
+          role: message.role === "assistant" ? "assistant" : "user",
+          content: String(message.content)
+        });
+      });
+    }
+
+    messages.push({ role: "user", content: prepared.text });
+
+    return messages;
+  },
+
+
+  /* =====================================
+     SAVE AI RESPONSE
+  ===================================== */
+
+  rememberAssistantResponse(text) {
+    if (!text || typeof text !== "string") return;
+    this.remember("conversations", { role: "assistant", content: text, time: Date.now() });
+  },
+
+
+  /* =====================================
+     VOICE SYSTEM
+     [WORKING NOW] in Chrome/Edge/most Android browsers.
+     [PARTIALLY IMPLEMENTED] in Safari/iOS — browser support varies,
+     handled gracefully below (supported flag).
+  ===================================== */
+
+  voice: {
+
+    recognition: null,
+    isListening: false,
+    isSpeaking: false,
+    supported: false,
+
+    init() {
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!Recognition) {
+        console.warn("Speech recognition not supported in this browser.");
+        this.supported = false;
+        return false;
+      }
+
+      this.recognition = new Recognition();
+      this.recognition.continuous = false;
+      this.recognition.interimResults = true;
+      this.recognition.lang = "hi-IN";
+      this.recognition.maxAlternatives = 1;
+
+      this.recognition.onstart = () => {
+        this.isListening = true;
+        document.dispatchEvent(new CustomEvent("masterVoiceStart"));
+      };
+
+      this.recognition.onresult = event => {
+        let finalText = "";
+        let interimText = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          const transcript = result[0].transcript;
+          if (result.isFinal) finalText += transcript;
+          else interimText += transcript;
+        }
+
+        document.dispatchEvent(new CustomEvent("masterVoiceResult", { detail: { finalText, interimText } }));
+
+        if (finalText.trim()) {
+          document.dispatchEvent(new CustomEvent("masterVoiceFinal", { detail: { text: finalText.trim() } }));
+        }
+      };
+
+      this.recognition.onerror = event => {
+        this.isListening = false;
+        document.dispatchEvent(new CustomEvent("masterVoiceError", { detail: { error: event.error } }));
+      };
+
+      this.recognition.onend = () => {
+        this.isListening = false;
+        document.dispatchEvent(new CustomEvent("masterVoiceEnd"));
+      };
+
+      this.supported = true;
+      return true;
+    },
+
+    startListening(language = "hi-IN") {
+      if (!this.recognition) this.init();
+      if (!this.recognition) return false;
+      if (this.isListening) return true;
+
+      try {
+        this.recognition.lang = language;
+        this.recognition.start();
+        return true;
+      } catch (error) {
+        console.warn(error);
+        return false;
+      }
+    },
+
+    stopListening() {
+      if (this.recognition && this.isListening) {
+        try { this.recognition.stop(); } catch (error) { console.warn(error); }
+      }
+    },
+
+    speak(text, options = {}) {
+      if (!("speechSynthesis" in window)) return false;
+
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(String(text));
+      utterance.lang = options.lang || "hi-IN";
+      utterance.rate = options.rate || 1;
+      utterance.pitch = options.pitch || 1;
+      utterance.volume = options.volume ?? 1;
+
+      utterance.onstart = () => {
+        this.isSpeaking = true;
+        document.dispatchEvent(new CustomEvent("masterSpeechStart"));
+      };
+
+      utterance.onend = () => {
+        this.isSpeaking = false;
+        document.dispatchEvent(new CustomEvent("masterSpeechEnd"));
+      };
+
+      utterance.onerror = () => { this.isSpeaking = false; };
+
+      window.speechSynthesis.speak(utterance);
+      return true;
+    },
+
+    stopSpeaking() {
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      this.isSpeaking = false;
+    }
+
+  },
+
+
+  /* =====================================
+     LIVE VOICE UI BINDING
+     Wired to the fullscreen Live modal that
+     actually exists in index.html:
+     #liveModal #liveOrb #liveStatus #liveTranscript
+     #liveMicToggle #liveClose #liveStop #micButton
+  ===================================== */
+
+  initLiveVoice() {
+    const micButton     = document.getElementById("micButton");     // opens live modal
+    const liveModal      = document.getElementById("liveModal");
+    const liveOrb         = document.getElementById("liveOrb");
+    const liveStatus      = document.getElementById("liveStatus");
+    const liveTranscript  = document.getElementById("liveTranscript");
+    const liveMicToggle   = document.getElementById("liveMicToggle");
+    const liveClose       = document.getElementById("liveClose");
+    const liveStop        = document.getElementById("liveStop");
+
+    if (!micButton || !liveModal) return;
+
+    this.voice.init();
+
+    if (!this.voice.supported) {
+      // Graceful degrade: still let the modal open so the user can read
+      // the honest status, but disable the mic control.
+      if (liveMicToggle) liveMicToggle.disabled = true;
+    }
+
+    const openLive = () => {
+      liveModal.classList.add("show");
+      if (liveStatus) { liveStatus.textContent = this.voice.supported ? "Tap the mic to speak" : "Voice input not supported in this browser"; liveStatus.className = "live-status"; }
+    };
+
+    const closeLive = () => {
+      this.voice.stopListening();
+      this.voice.stopSpeaking();
+      liveModal.classList.remove("show");
+      liveOrb?.classList.remove("listening", "speaking");
+      liveMicToggle?.classList.remove("active");
+      if (liveTranscript) { liveTranscript.textContent = ""; liveTranscript.classList.remove("show"); }
+    };
+
+    micButton.addEventListener("click", openLive);
+    liveClose?.addEventListener("click", closeLive);
+    liveStop?.addEventListener("click", closeLive);
+
+    liveMicToggle?.addEventListener("click", () => {
+      if (!this.voice.supported) return;
+      if (this.voice.isListening) this.voice.stopListening();
+      else this.voice.startListening("hi-IN");
+    });
+
+    document.addEventListener("masterVoiceStart", () => {
+      liveOrb?.classList.add("listening");
+      liveMicToggle?.classList.add("active");
+      if (liveStatus) { liveStatus.textContent = "Listening..."; liveStatus.className = "live-status listening"; }
+    });
+
+    document.addEventListener("masterVoiceResult", e => {
+      if (!liveTranscript) return;
+      const text = (e.detail.finalText || "") + (e.detail.interimText || "");
+      liveTranscript.textContent = text;
+      liveTranscript.classList.toggle("show", !!text.trim());
+    });
+
+    document.addEventListener("masterVoiceEnd", () => {
+      liveOrb?.classList.remove("listening");
+      liveMicToggle?.classList.remove("active");
+      if (liveStatus) { liveStatus.textContent = "Tap the mic to speak"; liveStatus.className = "live-status"; }
+    });
+
+    document.addEventListener("masterVoiceFinal", e => {
+      // app.js listens for this same event to actually send the message
+      // through the normal chat pipeline (see wireLiveVoice in app.js).
+    });
+
+    document.addEventListener("masterSpeechStart", () => {
+      liveOrb?.classList.add("speaking");
+      if (liveStatus) { liveStatus.textContent = "MASTER is speaking..."; liveStatus.className = "live-status speaking"; }
+    });
+
+    document.addEventListener("masterSpeechEnd", () => {
+      liveOrb?.classList.remove("speaking");
+      if (liveStatus) { liveStatus.textContent = "Tap the mic to speak"; liveStatus.className = "live-status"; }
+    });
+  }
+
+};
+
+
+/* =========================================
+   GLOBAL ACCESS
+========================================= */
+
+window.MASTER_AI_ENGINE = MASTER_AI_ENGINE;
+
+
+/* =========================================
+   INITIALIZATION
+   NOTE: app.js also runs on DOMContentLoaded and calls
+   initLiveVoice() itself after it wires the send pipeline,
+   so voice input can trigger a real chat message. This
+   duplicate-safe init here just makes sure recognition/synthesis
+   are ready even if app.js loads slowly.
+========================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  MASTER_AI_ENGINE.voice.init();
+});
+
+
+/* =========================================
+   MASTER AI — APP.JS
+   UI wiring + chat flow + settings + projects + attachments
+========================================= */
+
+"use strict";
+
+(() => {
+
+  /* =====================================
+     STORAGE KEYS
+  ===================================== */
+
+  const CHATS_KEY = "master_ai_chats";
+  const PROJECTS_KEY = "master_ai_projects";
+  const TOOLS_KEY = "master_ai_tools";
+  const INTEGRATIONS_KEY = "master_ai_integrations";
+
+  /* =====================================
+     STATE
+  ===================================== */
+
+  const state = {
+    chats: loadJSON(CHATS_KEY, []),
+    projects: loadJSON(PROJECTS_KEY, []),
+    tools: loadJSON(TOOLS_KEY, []),
+    activeChatId: null,
+    attachments: [],   // { name, size, type, textContent|imageDataUrl|videoFrames|null }
+    voiceModeActive: false,
+    isSending: false
+  };
+
+  function loadJSON(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function saveChats() { localStorage.setItem(CHATS_KEY, JSON.stringify(state.chats)); }
+  function saveProjects() { localStorage.setItem(PROJECTS_KEY, JSON.stringify(state.projects)); }
+  function saveTools() { localStorage.setItem(TOOLS_KEY, JSON.stringify(state.tools)); }
+
+  /* =====================================
+     DOM REFS
+  ===================================== */
+
+  const el = id => document.getElementById(id);
+
+  const dom = {
+    sidebar: el("sidebar"),
+    sidebarOverlay: el("sidebarOverlay"),
+    menuButton: el("menuButton"),
+    newChatButton: el("newChatButton"),
+    historyList: el("historyList"),
+    projectList: el("projectList"),
+    createProjectButton: el("createProjectButton"),
+    settingsButton: el("settingsButton"),
+
+    chat: el("chat"),
+    welcomeScreen: el("welcomeScreen"),
+
+    canvasPanel: el("canvasPanel"),
+    preview: el("preview"),
+    previewClear: el("previewClear"),
+
+    messageInput: el("messageInput"),
+    sendButton: el("sendButton"),
+    attachButton: el("attachButton"),
+    fileInput: el("fileInput"),
+    attachmentName: el("attachmentName"),
+    micButton: el("micButton"),
+
+    connectionStatus: el("connectionStatus"),
+
+    // settings modal
+    settingsModal: el("settingsModal"),
+    closeSettingsButton: el("closeSettingsButton"),
+    providerList: el("providerList"),
+    providerSelect: el("providerSelect"),
+    apiUrlInput: el("apiUrlInput"),
+    modelInput: el("modelInput"),
+    apiKeyInput: el("apiKeyInput"),
+    saveProviderButton: el("saveProviderButton"),
+    settingsStatus: el("settingsStatus"),
+    clearMemoryButton: el("clearMemoryButton"),
+    toolsList: el("toolsList"),
+    telegramTokenInput: el("telegramTokenInput"),
+    telegramChatIdInput: el("telegramChatIdInput"),
+    telegramEnabledCheckbox: el("telegramEnabledCheckbox"),
+    saveIntegrationsButton: el("saveIntegrationsButton"),
+
+    // project modal
+    projectModal: el("projectModal"),
+    projectNameInput: el("projectNameInput"),
+    cancelProjectButton: el("cancelProjectButton"),
+    saveProjectButton: el("saveProjectButton"),
+
+    // live voice modal (elements themselves are bound inside mastermind.js,
+    // app.js only needs the final-transcript + speak hookup)
+    liveModal: el("liveModal")
+  };
+
+  /* =====================================
+     INIT
+  ===================================== */
+
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!state.chats.length) {
+      createNewChat();
+    } else {
+      state.activeChatId = state.chats[state.chats.length - 1].id;
+    }
+
+    renderHistory();
+    renderProjects();
+    renderActiveChat();
+
+    wireSidebar();
+    wireChatInput();
+    wireAttachments();
+    wireSettings();
+    wireProjects();
+    wirePreview();
+
+    // MASTER_AI_ENGINE builds the live modal's own listening/speaking UI;
+    // app.js just needs to react when a voice utterance is finalized.
+    if (window.MASTER_AI_ENGINE) {
+      MASTER_AI_ENGINE.initLiveVoice();
+      wireLiveVoicePipeline();
+    }
+
+    setStatus("Ready");
+  });
+
+  /* =====================================
+     SIDEBAR
+  ===================================== */
+
+  function wireSidebar() {
+    dom.menuButton?.addEventListener("click", () => toggleSidebar(true));
+    dom.sidebarOverlay?.addEventListener("click", () => toggleSidebar(false));
+
+    dom.newChatButton?.addEventListener("click", () => {
+      createNewChat();
+      renderHistory();
+      renderActiveChat();
+      toggleSidebar(false);
+    });
+
+    dom.settingsButton?.addEventListener("click", openSettings);
+  }
+
+  function toggleSidebar(open) {
+    dom.sidebar?.classList.toggle("open", open);
+    dom.sidebarOverlay?.classList.toggle("show", open);
+  }
+
+  function renderHistory() {
+    if (!dom.historyList) return;
+    dom.historyList.innerHTML = "";
+
+    [...state.chats].reverse().forEach(chat => {
+      const btn = document.createElement("button");
+      btn.className = "history-item" + (chat.id === state.activeChatId ? " active" : "");
+      btn.type = "button";
+      btn.textContent = chat.title || "New chat";
+      btn.addEventListener("click", () => {
+        state.activeChatId = chat.id;
+        renderHistory();
+        renderActiveChat();
+        toggleSidebar(false);
+      });
+      dom.historyList.appendChild(btn);
+    });
+  }
+
+  /* =====================================
+     PROJECTS
+  ===================================== */
+
+  function wireProjects() {
+    dom.createProjectButton?.addEventListener("click", () => {
+      dom.projectNameInput.value = "";
+      dom.projectModal.classList.add("show");
+      dom.projectModal.setAttribute("aria-hidden", "false");
+      toggleSidebar(false);
+      setTimeout(() => dom.projectNameInput.focus(), 0);
+    });
+
+    dom.cancelProjectButton?.addEventListener("click", closeProjectModal);
+
+    dom.saveProjectButton?.addEventListener("click", () => {
+      const name = dom.projectNameInput.value.trim();
+      if (!name) return;
+
+      state.projects.push({ id: cryptoId(), name, createdAt: Date.now() });
+      saveProjects();
+      renderProjects();
+      closeProjectModal();
+    });
+  }
+
+  function closeProjectModal() {
+    dom.projectModal.classList.remove("show");
+    dom.projectModal.setAttribute("aria-hidden", "true");
+  }
+
+  function renderProjects() {
+    if (!dom.projectList) return;
+    dom.projectList.innerHTML = "";
+
+    state.projects.forEach(project => {
+      const btn = document.createElement("button");
+      btn.className = "project-item";
+      btn.type = "button";
+      btn.textContent = project.name;
+      dom.projectList.appendChild(btn);
+    });
+  }
+
+  /* =====================================
+     CHAT — CREATE / RENDER
+  ===================================== */
+
+  function createNewChat() {
+    const chat = { id: cryptoId(), title: "New chat", messages: [], createdAt: Date.now() };
+    state.chats.push(chat);
+    state.activeChatId = chat.id;
+    saveChats();
+  }
+
+  function getActiveChat() {
+    return state.chats.find(c => c.id === state.activeChatId);
+  }
+
+  function renderActiveChat() {
+    const chat = getActiveChat();
+    if (!chat || !dom.chat) return;
+
+    dom.chat.innerHTML = "";
+
+    if (!chat.messages.length) {
+      dom.chat.appendChild(buildWelcomeScreen());
+      return;
+    }
+
+    chat.messages.forEach(msg => dom.chat.appendChild(buildMessageBubble(msg.role, msg.content, msg.attachments)));
+    scrollChatToBottom();
+  }
+
+  function buildWelcomeScreen() {
+    const wrap = document.createElement("div");
+    wrap.className = "welcome";
+    wrap.innerHTML = `
+      <div class="master-orb"><div class="orb-ring"></div><div class="orb-ring ring-two"></div><div class="orb-core">M</div></div>
+      <h1>MASTER AI</h1>
+      <p>Type a message, attach a file, or tap the mic for MASTER Live.</p>
+      <div class="capability-grid">
+        <div class="capability-card"><span>🧠</span>Mastermind decisions — weighs options, risks, and consequences</div>
+        <div class="capability-card"><span>💻</span>Coding help — debugging, explanations, snippets</div>
+        <div class="capability-card"><span>🗂️</span>Projects — group chats and files together</div>
+        <div class="capability-card"><span>🎙️</span>Live voice — talk and hear MASTER reply</div>
+      </div>
+    `;
+    return wrap;
+  }
+
+  function buildMessageBubble(role, content, attachments) {
+    const div = document.createElement("div");
+    div.className = "message " + (role === "user" ? "user" : "master");
+
+    if (role !== "user") {
+      const label = document.createElement("strong");
+      label.textContent = "MASTER AI";
+      div.appendChild(label);
+    }
+
+    const body = document.createElement("span");
+    body.textContent = content;
+    div.appendChild(body);
+
+    if (Array.isArray(attachments) && attachments.length) {
+      const note = document.createElement("span");
+      note.className = "file-note";
+      note.textContent = "📎 " + attachments.join(", ");
+      div.appendChild(note);
+    }
+
+    if (role !== "user") {
+      const codeMatch = content.match(/```([\w-]*)\n([\s\S]*?)```/);
+      if (codeMatch) {
+        const saveBtn = document.createElement("button");
+        saveBtn.type = "button";
+        saveBtn.className = "save-tool-btn";
+        saveBtn.textContent = "🔧 Save as Tool";
+        saveBtn.addEventListener("click", () => {
+          const name = window.prompt("Tool ka naam?", "My Tool");
+          if (!name) return;
+          state.tools.push({
+            id: cryptoId(),
+            name,
+            language: codeMatch[1] || "text",
+            code: codeMatch[2],
+            createdAt: Date.now()
+          });
+          saveTools();
+          renderToolsList();
+          saveBtn.textContent = "✅ Saved (dekho Settings > My AI Tools)";
+          saveBtn.disabled = true;
+        });
+        div.appendChild(saveBtn);
+      }
+    }
+
+    return div;
+  }
+
+  function buildLoadingBubble() {
+    const div = document.createElement("div");
+    div.className = "message master loading";
+    div.innerHTML = `<strong>MASTER AI</strong><span class="dots"><span></span><span></span><span></span></span>`;
+    return div;
+  }
+
+  function scrollChatToBottom() {
+    if (dom.chat) dom.chat.scrollTop = dom.chat.scrollHeight;
+  }
+
+  /* =====================================
+     CHAT INPUT / SEND FLOW
+  ===================================== */
+
+  function wireChatInput() {
+    dom.sendButton?.addEventListener("click", () => handleSend());
+
+    dom.messageInput?.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+  }
+
+  async function handleSend(voiceText) {
+    if (state.isSending) return;
+    const text = String(voiceText ?? dom.messageInput?.value ?? "").trim();
+    if (!text && !state.attachments.length) {
+      dom.messageInput?.focus();
+      setStatus("Type a message or attach a file");
+      return;
+    }
+
+    const chat = getActiveChat();
+    if (!chat) return;
+
+    const attachmentSummary = buildAttachmentSummary();
+    const fullUserText = attachmentSummary ? `${text}\n\n${attachmentSummary}` : text;
+    const attachedNames = state.attachments.map(a => a.name);
+    const imageParts = collectImageParts();
+
+    chat.messages.push({ role: "user", content: text || "(attachment only)", attachments: attachedNames });
+    if (chat.messages.length === 1) chat.title = text.slice(0, 40) || "Attachment";
+
+    renderActiveChat();
+    if (!voiceText) dom.messageInput.value = "";
+    clearAttachments();
+    saveChats();
+    renderHistory();
+
+    const profiles = MASTER_API_CONFIG.getEnabledProfiles();
+    if (!profiles.length) {
+      chat.messages.push({
+        role: "assistant",
+        content: "Message received. AI reply ke liye pehle menu → Settings mein apni API provider, model aur key add karo. Key source file mein save nahi hoti; sirf isi browser mein rehti hai."
+      });
+      saveChats();
+      renderActiveChat();
+      setStatus("Setup needed");
+      return;
+    }
+
+    state.isSending = true;
+    dom.sendButton.disabled = true;
+    dom.sendButton.textContent = "…";
+
+    const loadingBubble = buildLoadingBubble();
+    dom.chat.appendChild(loadingBubble);
+    scrollChatToBottom();
+    setStatus("Thinking...");
+
+    try {
+      const historyForApi = chat.messages.slice(0, -1); // everything before this new user turn
+      const messages = window.MASTER_AI_ENGINE
+        ? MASTER_AI_ENGINE.buildMessages(historyForApi, fullUserText)
+        : [{ role: "user", content: fullUserText }];
+
+      // [WORKING NOW, provider-dependent] If photos/video frames were attached,
+      // send them as real vision content alongside the text. Works only if the
+      // ENABLED provider's model actually supports images (Gemini/GPT-4o class
+      // models do; some text-only models like base DeepSeek-chat may ignore
+      // or error on this — that is a provider limitation, not faked here.
+      if (imageParts.length) {
+        const last = messages[messages.length - 1];
+        last.content = [
+          { type: "text", text: last.content },
+          ...imageParts.map(url => ({ type: "image_url", image_url: { url } }))
+        ];
+      }
+
+      const replyText = await callAI(messages);
+
+      loadingBubble.remove();
+      chat.messages.push({ role: "assistant", content: replyText });
+      saveChats();
+      renderActiveChat();
+
+      window.MASTER_AI_ENGINE?.rememberAssistantResponse(replyText);
+      maybeUpdatePreview(replyText);
+      maybeSendToTelegram(replyText);
+
+      if (state.voiceModeActive) {
+        MASTER_AI_ENGINE.voice.speak(replyText, { lang: "hi-IN" });
+      }
+
+      setStatus("Ready");
+    } catch (err) {
+      loadingBubble.remove();
+      const message = err && err.message ? err.message : "Something went wrong.";
+      chat.messages.push({ role: "assistant", content: `⚠️ ${message}` });
+      saveChats();
+      renderActiveChat();
+      setStatus("Error");
+    } finally {
+      state.isSending = false;
+      dom.sendButton.disabled = false;
+      dom.sendButton.textContent = "↑";
+      dom.messageInput?.focus();
+    }
+  }
+
+  /* =====================================
+     AI CALL — MULTI PROVIDER + REAL SYNTHESIS
+     [WORKING NOW]
+     1. Every provider added in Settings is queried in parallel.
+     2. If only one answered, its answer is returned directly.
+     3. If 2+ answered, their answers are sent to one more real API
+        call (a "synthesis" pass) that is explicitly told to compare
+        them, resolve disagreements, drop anything unsupported, and
+        return ONE final accurate answer. This is an actual extra
+        API call — not a fake merge — so it does cost one more
+        request each time multiple providers respond.
+     If the synthesis call itself fails, we fall back to showing the
+     raw labeled answers so nothing silently disappears.
+  ===================================== */
+
+  async function callAI(messages) {
+    const profiles = MASTER_API_CONFIG.getEnabledProfiles();
+
+    if (!profiles.length) {
+      throw new Error("No provider with a key added. Open Settings and add one.");
+    }
+
+    const results = await Promise.allSettled(profiles.map(p => callSingleProvider(p, messages)));
+
+    const successes = [];
+    const failures = [];
+
+    results.forEach((res, i) => {
+      const label = profiles[i].label || profiles[i].provider;
+      if (res.status === "fulfilled") successes.push({ label, text: res.value });
+      else failures.push({ label, error: res.reason?.message || "failed" });
+    });
+
+    if (!successes.length) {
+      throw new Error(failures.map(f => `${f.label}: ${f.error}`).join(" | "));
+    }
+
+    if (successes.length === 1) {
+      let text = successes[0].text;
+      if (failures.length) text += "\n\n" + failures.map(f => `⚠️ ${f.label} failed: ${f.error}`).join("\n");
+      return text;
+    }
+
+    // 2+ answers — actually cross-check and synthesize one final answer.
+    const lastContent = messages[messages.length - 1]?.content;
+    const questionText = typeof lastContent === "string"
+      ? lastContent
+      : (Array.isArray(lastContent) ? (lastContent.find(p => p.type === "text")?.text || "") : "");
+    const synthesizer = profiles.find(p => (p.label || p.provider) === successes[0].label) || profiles[0];
+
+    try {
+      const finalAnswer = await callSingleProvider(synthesizer, buildSynthesisMessages(questionText, successes));
+      let note = failures.length ? "\n\n" + failures.map(f => `⚠️ ${f.label} failed: ${f.error}`).join("\n") : "";
+      return finalAnswer + note;
+    } catch (err) {
+      // Synthesis call failed — be honest, fall back to raw labeled answers.
+      let fallback = successes.map(s => `【${s.label}】\n${s.text}`).join("\n\n---\n\n");
+      fallback += `\n\n⚠️ Could not cross-check/combine these (${err.message}) — showing each provider's raw answer instead.`;
+      return fallback;
+    }
+  }
+
+  function buildSynthesisMessages(question, successes) {
+    const answersBlock = successes.map((s, i) => `Answer ${i + 1} (from ${s.label}):\n${s.text}`).join("\n\n");
+
+    return [
+      {
+        role: "system",
+        content: "You are a careful fact-checking editor. You will be given a question and several AI-generated answers to it from different models. Compare them, verify consistency, resolve contradictions, discard anything incorrect or unsupported, and produce ONE final, accurate, well-organized answer. Do not mention 'Answer 1 / Answer 2' or the model names in your final reply — just answer the question directly, correctly, and clearly. Reply in the same language as the question."
+      },
+      {
+        role: "user",
+        content: `Original question:\n${question}\n\n${answersBlock}\n\nNow give me the one final, accurate, cross-checked answer.`
+      }
+    ];
+  }
+
+  async function callSingleProvider(profile, messages) {
+    const response = await fetch(profile.url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${profile.apiKey}`
+      },
+      body: JSON.stringify({
+        model: profile.model,
+        messages,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text().catch(() => "");
+      throw new Error(`${response.status}: ${errBody.slice(0, 150) || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error("empty response — check model name");
+    return content;
+  }
+
+  /* =====================================
+     ATTACHMENTS
+     [WORKING NOW] text-like files (txt, md, js, css, html, json, csv) — full
+     content read and included.
+     [WORKING NOW, provider-dependent] images — sent as real vision content to
+     the AI (base64), so photos are genuinely analyzed IF the enabled model
+     supports images (Gemini / GPT-4o class models do).
+     [WORKING NOW, best-effort] video — NOT full video understanding. A small
+     number of frames (default 4) are sampled evenly across the clip and sent
+     as images, so the AI can describe what happens at those moments. This is
+     frame sampling, not continuous frame-by-frame playback analysis — being
+     upfront about that limit rather than overclaiming.
+     [NEEDS EXTERNAL API] real PDF text/table extraction — not implemented,
+     filename is passed along but content isn't parsed.
+  ===================================== */
+
+  const TEXT_LIKE_EXT = ["txt", "md", "js", "css", "html", "json", "csv", "py", "ts", "jsx", "tsx"];
+  const MAX_FILES = 6;
+  const MAX_FILE_BYTES = 2 * 1024 * 1024;      // 2MB for text-like files
+  const MAX_IMAGE_BYTES = 5 * 1024 * 1024;     // 5MB per image
+  const MAX_VIDEO_BYTES = 20 * 1024 * 1024;    // 20MB per video, avoids freezing the UI
+  const VIDEO_FRAME_COUNT = 4;
+
+  function wireAttachments() {
+    dom.attachButton?.addEventListener("click", () => {
+      if (!dom.fileInput) return;
+      try {
+        if (typeof dom.fileInput.showPicker === "function") dom.fileInput.showPicker();
+        else dom.fileInput.click();
+      } catch {
+        dom.fileInput.click();
+      }
+    });
+
+    dom.fileInput?.addEventListener("change", async () => {
+      const files = Array.from(dom.fileInput.files || []);
+      dom.fileInput.value = "";
+
+      for (const file of files) {
+        if (state.attachments.length >= MAX_FILES) {
+          setStatus(`Max ${MAX_FILES} attachments`);
+          break;
+        }
+
+        if (file.type.startsWith("image/")) {
+          if (file.size > MAX_IMAGE_BYTES) {
+            state.attachments.push({ name: file.name, size: file.size, type: file.type, error: "image too large (5MB limit)" });
+          } else {
+            try {
+              const imageDataUrl = await readFileAsDataURL(file);
+              state.attachments.push({ name: file.name, size: file.size, type: file.type, imageDataUrl });
+            } catch {
+              state.attachments.push({ name: file.name, size: file.size, type: file.type, error: "could not read image" });
+            }
+          }
+          continue;
+        }
+
+        if (file.type.startsWith("video/")) {
+          if (file.size > MAX_VIDEO_BYTES) {
+            state.attachments.push({ name: file.name, size: file.size, type: file.type, error: "video too large (20MB limit)" });
+          } else {
+            setStatus("Sampling video frames...");
+            try {
+              const videoFrames = await extractVideoFrames(file, VIDEO_FRAME_COUNT);
+              state.attachments.push({ name: file.name, size: file.size, type: file.type, videoFrames });
+            } catch {
+              state.attachments.push({ name: file.name, size: file.size, type: file.type, error: "could not sample frames" });
+            }
+            setStatus("Ready");
+          }
+          continue;
+        }
+
+        if (file.size > MAX_FILE_BYTES) {
+          state.attachments.push({ name: file.name, size: file.size, type: file.type, textContent: null, error: "too large (2MB limit)" });
+          continue;
+        }
+
+        const ext = (file.name.split(".").pop() || "").toLowerCase();
+        let textContent = null;
+
+        if (TEXT_LIKE_EXT.includes(ext)) {
+          try {
+            textContent = await readFileAsText(file);
+            if (textContent.length > 8000) textContent = textContent.slice(0, 8000) + "\n...(truncated)";
+          } catch {
+            textContent = null;
+          }
+        }
+
+        state.attachments.push({ name: file.name, size: file.size, type: file.type, textContent });
+      }
+
+      renderAttachmentChips();
+      setStatus(state.attachments.length ? `${state.attachments.length} file(s) attached` : "Ready");
+    });
+  }
+
+  function readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  }
+
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function waitForSeek(video, time) {
+    return new Promise(resolve => {
+      const onSeeked = () => { video.removeEventListener("seeked", onSeeked); resolve(); };
+      video.addEventListener("seeked", onSeeked);
+      video.currentTime = time;
+    });
+  }
+
+  async function extractVideoFrames(file, frameCount) {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    video.playsInline = true;
+    video.src = URL.createObjectURL(file);
+
+    await new Promise((resolve, reject) => {
+      video.onloadedmetadata = resolve;
+      video.onerror = () => reject(new Error("video metadata failed"));
+    });
+
+    const scale = Math.min(1, 640 / (video.videoWidth || 640));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round((video.videoWidth || 640) * scale));
+    canvas.height = Math.max(1, Math.round((video.videoHeight || 360) * scale));
+    const ctx = canvas.getContext("2d");
+
+    const duration = video.duration && isFinite(video.duration) ? video.duration : 1;
+    const frames = [];
+
+    for (let i = 0; i < frameCount; i++) {
+      const t = Math.min(duration - 0.05, (duration * (i + 0.5)) / frameCount);
+      await waitForSeek(video, Math.max(0, t));
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      frames.push(canvas.toDataURL("image/jpeg", 0.6));
+    }
+
+    URL.revokeObjectURL(video.src);
+    return frames;
+  }
+
+  function renderAttachmentChips() {
+    if (!dom.attachmentName) return;
+    dom.attachmentName.innerHTML = "";
+
+    state.attachments.forEach((att, idx) => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      let label = att.name;
+      if (att.error) label += ` (${att.error})`;
+      else if (att.imageDataUrl) label = "🖼 " + label;
+      else if (att.videoFrames) label = `🎞 ${label} (${att.videoFrames.length} frames)`;
+      chip.textContent = label;
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.textContent = "×";
+      removeBtn.addEventListener("click", () => {
+        state.attachments.splice(idx, 1);
+        renderAttachmentChips();
+      });
+
+      chip.appendChild(removeBtn);
+      dom.attachmentName.appendChild(chip);
+    });
+  }
+
+  function buildAttachmentSummary() {
+    if (!state.attachments.length) return "";
+
+    return state.attachments.map(att => {
+      if (att.error) return `[Attached file: ${att.name} — could not be read: ${att.error}]`;
+      if (att.imageDataUrl) return `[Attached image: ${att.name} — sent for real visual analysis]`;
+      if (att.videoFrames) return `[Attached video: ${att.name} — ${att.videoFrames.length} sampled frames sent for visual analysis]`;
+      if (att.textContent) return `[Attached file: ${att.name}]\n${att.textContent}`;
+      return `[Attached file: ${att.name} — binary/unsupported type, content not analyzed]`;
+    }).join("\n\n");
+  }
+
+  function collectImageParts() {
+    const parts = [];
+    state.attachments.forEach(att => {
+      if (att.imageDataUrl) parts.push(att.imageDataUrl);
+      if (Array.isArray(att.videoFrames)) parts.push(...att.videoFrames);
+    });
+    return parts;
+  }
+
+  function clearAttachments() {
+    state.attachments = [];
+    renderAttachmentChips();
+  }
+
+  /* =====================================
+     PREVIEW / CANVAS PANEL
+  ===================================== */
+
+  function wirePreview() {
+    dom.previewClear?.addEventListener("click", () => {
+      dom.preview.textContent = "Preview output will appear here.";
+      dom.canvasPanel.classList.remove("show");
+    });
+  }
+
+  function maybeUpdatePreview(replyText) {
+    const codeMatch = replyText.match(/```[\w-]*\n([\s\S]*?)```/);
+    if (!codeMatch) return;
+
+    dom.preview.textContent = codeMatch[1];
+    dom.canvasPanel.classList.add("show");
+  }
+
+  /* =====================================
+     SETTINGS MODAL
+  ===================================== */
+
+  function wireSettings() {
+    dom.closeSettingsButton?.addEventListener("click", closeSettings);
+
+    dom.providerSelect?.addEventListener("change", () => {
+      const meta = MASTER_API_CONFIG.providers[dom.providerSelect.value];
+      if (!meta) return;
+      dom.apiUrlInput.value = meta.url;
+      dom.modelInput.value = meta.defaultModel;
+    });
+
+    dom.saveProviderButton?.addEventListener("click", () => {
+      const provider = dom.providerSelect.value;
+      const url = dom.apiUrlInput.value.trim();
+      const model = dom.modelInput.value.trim();
+      const apiKey = dom.apiKeyInput.value.trim();
+
+      if (!url || !apiKey) {
+        dom.settingsStatus.textContent = "URL aur API key dono chahiye.";
+        dom.settingsStatus.className = "settings-status error";
+        return;
+      }
+
+      MASTER_API_CONFIG.addProfile({
+        provider,
+        label: MASTER_API_CONFIG.providers[provider]?.label || provider,
+        url,
+        model,
+        apiKey
+      });
+
+      dom.apiKeyInput.value = "";
+      dom.settingsStatus.textContent = "Provider added and enabled.";
+      dom.settingsStatus.className = "settings-status success";
+      renderProviderList();
+    });
+
+    dom.clearMemoryButton?.addEventListener("click", () => {
+      const ok = window.MASTER_AI_ENGINE?.clearMemory();
+      dom.settingsStatus.textContent = ok ? "Memory cleared." : "Nothing to clear.";
+      dom.settingsStatus.className = "settings-status success";
+    });
+
+    dom.saveIntegrationsButton?.addEventListener("click", () => {
+      const integrations = {
+        telegramToken: dom.telegramTokenInput.value.trim(),
+        telegramChatId: dom.telegramChatIdInput.value.trim(),
+        telegramEnabled: dom.telegramEnabledCheckbox.checked
+      };
+      localStorage.setItem(INTEGRATIONS_KEY, JSON.stringify(integrations));
+      dom.settingsStatus.textContent = "Integrations saved.";
+      dom.settingsStatus.className = "settings-status success";
+    });
+  }
+
+  function renderToolsList() {
+    if (!dom.toolsList) return;
+    dom.toolsList.innerHTML = "";
+
+    if (!state.tools.length) {
+      dom.toolsList.innerHTML = '<div class="settings-note">Abhi koi tool save nahi hua. Chat mein jab MASTER AI code de, uske niche "🔧 Save as Tool" dabana — yahan aa jayega.</div>';
+      return;
+    }
+
+    state.tools.forEach(tool => {
+      const row = document.createElement("div");
+      row.className = "provider-item";
+
+      const info = document.createElement("div");
+      info.className = "provider-info";
+      info.innerHTML = `<div class="provider-name">${escapeHtml(tool.name)}</div><div class="provider-meta">${escapeHtml(tool.language)} · saved code, not auto-run</div>`;
+
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "provider-remove";
+      copyBtn.textContent = "📋";
+      copyBtn.title = "Copy code";
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard?.writeText(tool.code).catch(() => {});
+        copyBtn.textContent = "✅";
+        setTimeout(() => { copyBtn.textContent = "📋"; }, 1500);
+      });
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "provider-remove";
+      removeBtn.textContent = "×";
+      removeBtn.addEventListener("click", () => {
+        state.tools = state.tools.filter(t => t.id !== tool.id);
+        saveTools();
+        renderToolsList();
+      });
+
+      row.appendChild(info);
+      row.appendChild(copyBtn);
+      row.appendChild(removeBtn);
+      dom.toolsList.appendChild(row);
+    });
+  }
+
+  function renderProviderList() {
+    if (!dom.providerList) return;
+    dom.providerList.innerHTML = "";
+
+    const profiles = MASTER_API_CONFIG.loadProfiles();
+
+    profiles.forEach(profile => {
+      const row = document.createElement("div");
+      row.className = "provider-item";
+
+      const dot = document.createElement("span");
+      dot.className = "provider-active-dot";
+      dot.title = "Active";
+
+      const info = document.createElement("div");
+      info.className = "provider-info";
+      info.innerHTML = `<div class="provider-name">${escapeHtml(profile.label || profile.provider)}</div><div class="provider-meta">${escapeHtml(profile.model || "")}</div>`;
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "provider-remove";
+      removeBtn.textContent = "×";
+      removeBtn.addEventListener("click", () => {
+        MASTER_API_CONFIG.removeProfile(profile.id);
+        renderProviderList();
+      });
+
+      row.appendChild(dot);
+      row.appendChild(info);
+      row.appendChild(removeBtn);
+      dom.providerList.appendChild(row);
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function openSettings() {
+    dom.providerSelect.value = "deepseek";
+    const meta = MASTER_API_CONFIG.providers.deepseek;
+    dom.apiUrlInput.value = meta.url;
+    dom.modelInput.value = meta.defaultModel;
+    dom.apiKeyInput.value = "";
+
+    const enabledCount = MASTER_API_CONFIG.getEnabledProfiles().length;
+    dom.settingsStatus.textContent = enabledCount
+      ? `${enabledCount} provider(s) active — running together automatically.`
+      : "No provider added yet.";
+    dom.settingsStatus.className = "settings-status";
+
+    renderProviderList();
+    renderToolsList();
+
+    const integrations = loadJSON(INTEGRATIONS_KEY, {});
+    dom.telegramTokenInput.value = integrations.telegramToken || "";
+    dom.telegramChatIdInput.value = integrations.telegramChatId || "";
+    dom.telegramEnabledCheckbox.checked = !!integrations.telegramEnabled;
+
+    dom.settingsModal.classList.add("show");
+    dom.settingsModal.setAttribute("aria-hidden", "false");
+    toggleSidebar(false);
+  }
+
+  function closeSettings() {
+    dom.settingsModal.classList.remove("show");
+    dom.settingsModal.setAttribute("aria-hidden", "true");
+  }
+
+  /* =====================================
+     LIVE VOICE -> CHAT PIPELINE
+     mastermind.js handles the modal's visual states (listening/
+     speaking/orb). app.js only needs to know when the user finished
+     talking, so the transcript actually reaches the AI.
+  ===================================== */
+
+  function wireLiveVoicePipeline() {
+    document.addEventListener("masterVoiceStart", () => { state.voiceModeActive = true; });
+
+    document.addEventListener("masterVoiceFinal", e => {
+      const text = e.detail?.text;
+      if (text) handleSend(text);
+    });
+
+    dom.liveModal?.addEventListener("transitionend", () => {}); // no-op, placeholder for future animation hooks
+  }
+
+  /* =====================================
+     TELEGRAM INTEGRATION
+     [WORKING NOW] Sends every AI reply to your Telegram chat, directly from
+     the browser, using the Telegram Bot API. Only sends — this app cannot
+     listen for messages you send back in Telegram while the tab is closed,
+     since that needs a server running all the time. Set up token/chat id
+     in Settings > Integrations.
+  ===================================== */
+
+  async function maybeSendToTelegram(text) {
+    const integrations = loadJSON(INTEGRATIONS_KEY, {});
+    if (!integrations.telegramEnabled || !integrations.telegramToken || !integrations.telegramChatId) return;
+
+    try {
+      await fetch(`https://api.telegram.org/bot${integrations.telegramToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: integrations.telegramChatId, text: text.slice(0, 4000) })
+      });
+    } catch (e) {
+      console.warn("Telegram send failed:", e);
+    }
+  }
+
+  /* =====================================
+     MISC HELPERS
+  ===================================== */
+
+  function setStatus(text) {
+    if (dom.connectionStatus) dom.connectionStatus.textContent = text;
+  }
+
+  function cryptoId() {
+    return (crypto?.randomUUID?.() || `id_${Date.now()}_${Math.random().toString(16).slice(2)}`);
+  }
+
+})();
+
+  </script>
+
+</body>
+</html>
