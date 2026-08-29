@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MASTER AI</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d0f14">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- ============== SIDEBAR OVERLAY (mobile) ============== -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ============== SIDEBAR ============== -->
+    <aside class="sidebar" id="sidebar">
+
+      <div class="logo">MASTER AI</div>
+
+      <button class="new-chat" id="newChatButton" type="button">＋ New Chat</button>
+
+      <div class="history">
+        <div class="section-title">Chat History</div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+      <div class="projects">
+        <div class="section-title">Projects</div>
+        <div class="project-list" id="projectList"></div>
+        <button class="project-item create-project" id="createProjectButton" type="button">＋ Create Project</button>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button class="settings-button" id="settingsButton" type="button">⚙ Settings</button>
+      </div>
+
+    </aside>
+
+    <!-- ============== MAIN ============== -->
+    <main class="main">
+
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" type="button" aria-label="Open menu">☰</button>
+        <strong>MASTER AI</strong>
+        <span class="status" id="connectionStatus">Ready</span>
+      </header>
+
+      <div class="content">
+
+        <section class="chat" id="chat">
+          <div class="welcome" id="welcomeScreen">
+            <h1>MASTER AI</h1>
+            <p>Type a message or talk using MASTER Live.</p>
+          </div>
+        </section>
+
+        <aside class="canvas" id="canvasPanel">
+          <div class="canvas-header">
+            <span class="canvas-title">Preview</span>
+            <button class="canvas-clear" id="previewClear" type="button" aria-label="Clear preview">Clear</button>
+          </div>
+          <div class="preview" id="preview">Preview output will appear here.</div>
+        </aside>
+
+      </div>
+
+      <!-- ============== INPUT ============== -->
+      <section class="input-area">
+
+        <div class="attachment-name" id="attachmentName"></div>
+
+        <div class="input-box">
+
+          <button class="attach" id="attachButton" type="button" aria-label="Attach files">📎</button>
+          <input type="file" id="fileInput" multiple hidden>
+
+          <div class="input-wrap">
+            <input id="messageInput" type="text" placeholder="Message MASTER AI..." autocomplete="off">
+          </div>
+
+          <button class="mic-button" id="micButton" type="button" aria-label="Talk to MASTER (Live)">🎙</button>
+          <button class="send" id="sendButton" type="button" aria-label="Send message">↑</button>
+
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+
+  <!-- ============== MASTER LIVE (fullscreen voice) ============== -->
+  <div class="live-screen" id="liveModal">
+
+    <div class="live-header">
+      <div class="live-title"><span class="live-spark">✦</span> MASTER Live</div>
+      <button class="live-close-top" id="liveClose" type="button" aria-label="Close live mode">×</button>
+    </div>
+
+    <div class="live-content">
+      <div class="live-status" id="liveStatus">Tap the circle to speak</div>
+      <div class="live-orb" id="liveOrb"></div>
+      <div class="live-transcript" id="liveTranscript"></div>
+    </div>
+
+    <div class="live-controls">
+      <button class="live-control live-mic" id="liveMicToggle" type="button" aria-label="Toggle microphone">🎙</button>
+      <button class="live-control live-end" id="liveStop" type="button" aria-label="End live session">✕</button>
+    </div>
+
+  </div>
+
+
+  <!-- ============== SETTINGS MODAL ============== -->
+  <div class="modal" id="settingsModal" aria-hidden="true">
+    <div class="modal-box settings-box" role="dialog" aria-modal="true">
+
+      <div class="settings-header">
+        <h2>Settings</h2>
+        <button id="closeSettingsButton" type="button" aria-label="Close settings">×</button>
+      </div>
+
+      <p class="settings-note">API settings and MASTER AI configuration. Your API key is stored only in this browser (localStorage) — it is never written into any source file.</p>
+
+      <label for="providerSelect">API Provider</label>
+      <select id="providerSelect">
+        <option value="deepseek">DeepSeek</option>
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Gemini</option>
+        <option value="custom">Custom API</option>
+      </select>
+
+      <label for="apiUrlInput">API URL</label>
+      <input id="apiUrlInput" type="text" placeholder="API URL">
+
+      <label for="modelInput">Model</label>
+      <input id="modelInput" type="text" placeholder="Model name">
+
+      <label for="apiKeyInput">API Key</label>
+      <input id="apiKeyInput" type="password" placeholder="Paste API key" autocomplete="off">
+
+      <button class="save-provider" id="saveProviderButton" type="button">Save API Settings</button>
+
+      <div class="settings-status" id="settingsStatus"></div>
+
+      <hr>
+
+      <h3>Memory</h3>
+      <p class="settings-note">Clear remembered information stored in this browser.</p>
+      <button class="save-provider" id="clearMemoryButton" type="button">Clear Memory</button>
+
+    </div>
+  </div>
+
+
+  <!-- ============== PROJECT MODAL ============== -->
+  <div class="modal" id="projectModal" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true">
+
+      <h2>Create Project</h2>
+
+      <label for="projectNameInput">Project Name</label>
+      <input id="projectNameInput" type="text" placeholder="My new project">
+
+      <div class="modal-actions">
+        <button id="cancelProjectButton" type="button">Cancel</button>
+        <button id="saveProjectButton" type="button">Create</button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ==============================
+       SCRIPTS
+       Order matters: Config -> Intelligence -> App
+  =============================== -->
+
+  <script src="api-config.js"></script>
+  <script src="mastermind.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
